@@ -38,7 +38,6 @@ Die Datei für das Admin-Setup ist absichtlich nicht in der Menü-Navigation ver
 - `index.html` — Menüstruktur
 - `styles.css` — Layout, responsives Design und Dialog-/Katalogstile
 - `app.js` — UI-Interaktionen, Song-Katalog und TobiServices-Account-Verbindung
-- `account-setup-7f3c.html` — unlinked Admin-Setup; Zugriffsschutz erfolgt durch das Backend, nicht durch den Dateinamen
 - `.nojekyll` — Vorbereitung für GitHub Pages
 
 ## Tracklist-Quellen
