@@ -119,8 +119,7 @@ function renderPlayer() {
     pill.setAttribute("aria-label", "Anmelden oder Account öffnen");
     return;
   }
-  const display = accountProfile?.displayName || accountProfile?.username ||
-    accountUser.displayName || "TobiServices";
+  const display = accountProfile?.displayName || accountUser.displayName || accountUser.email || "TobiServices";
   nameEl.textContent = display;
   const initials = String(display).trim().split(/\s+/).slice(0, 2).map(part => part[0] || "").join("").toUpperCase();
   avatarEl.textContent = initials.slice(0, 2) || "TS";
@@ -149,14 +148,14 @@ function showProfile() {
     openLoginModal();
     return;
   }
-  const display = accountProfile?.displayName || accountProfile?.username || accountUser.displayName || "TobiServices Account";
-  const username = accountProfile?.username || "(nicht verfügbar)";
+  const display = accountProfile?.displayName || accountUser.displayName || accountUser.email || "TobiServices Account";
+  const email = accountProfile?.email || accountUser.email || "(nicht verfügbar)";
   const tags = Array.isArray(accountProfile?.tags) ? accountProfile.tags : [];
   const tagHtml = tags.length
     ? tags.map(tag => '<span class="account-tag"></span>').join("")
     : '<span class="account-tag muted-tag">Keine Tags</span>';
   openModal("TobiServices Account",
-    '<p class="modal-copy">Du bist mit deinem zentralen TobiServices-Account angemeldet.</p>' +
+    '<p class="modal-copy">Du bist mit deinem Firebase-E-Mail-Konto angemeldet.</p>' +
     '<div class="account-summary"><div class="account-avatar"></div><div><strong class="account-display"></strong><span class="account-username"></span></div></div>' +
     '<div class="account-details"><span>ACCOUNT-ID</span><code class="account-uid"></code></div>' +
     '<div class="account-tags"><span class="field-caption">TAGS</span><div class="tag-list">' + tagHtml + '</div></div>' +
@@ -165,7 +164,7 @@ function showProfile() {
       '<button class="ui-button ghost" id="logoutAccount">Abmelden</button></div>',
     () => {
       $(".account-display").textContent = display;
-      $(".account-username").textContent = "@" + username;
+      $(".account-username").textContent = email;
       $(".account-uid").textContent = accountUser.uid;
       $(".account-avatar").textContent = initialsFor(display);
       $$(".account-tag:not(.muted-tag)").forEach((el, index) => { el.textContent = tags[index] || ""; });
@@ -204,13 +203,13 @@ function openLoginModal() {
     return;
   }
   openModal("Mit TobiServices anmelden",
-    '<p class="modal-copy">Melde dich mit deinem bestehenden TobiServices-Benutzernamen an. Es wird kein E-Mail-Login verwendet.</p>' +
+    '<p class="modal-copy">Melde dich mit einem bestehenden Firebase-Authentication-Konto und deiner E-Mail-Adresse an.</p>' +
     '<form id="loginForm" class="account-form">' +
-      '<label for="accountUsername">Benutzername</label><input id="accountUsername" name="username" autocomplete="username" maxlength="32" required placeholder="Dein Username">' +
+      '<label for="accountUsername">E-Mail-Adresse</label><input id="accountUsername" name="email" type="email" autocomplete="email" maxlength="254" required placeholder="name@beispiel.de">' +
       '<label for="accountPassword">Passwort</label><input id="accountPassword" name="password" type="password" autocomplete="current-password" maxlength="128" required placeholder="Dein Passwort">' +
       '<p class="form-message" id="loginMessage" aria-live="polite"></p>' +
       '<button class="ui-button primary" id="loginSubmit" type="submit">Anmelden</button>' +
-    '</form><p class="modal-footnote">Noch kein Account? Accounts werden zentral durch TobiServices-Admins angelegt.</p>',
+    '</form><p class="modal-footnote">Neue Konten legst du in Firebase Authentication an. Berechtigungen kommen aus dem geschützten Tag-System.</p>',
     () => {
       $("#loginForm").addEventListener("submit", async event => {
         event.preventDefault();
