@@ -229,7 +229,7 @@ async function initializeAccounts() {
       renderPlayer();
       updateBetaGate();
       renderMaintenanceBypassControls();
-      if (user && !overlay.hidden && $("#loginForm") && !maintenanceState.enabled) closeModal();
+      if (user && !overlay.hidden && $("#loginForm")) closeModal();
     });
   } catch (error) {
     accountLoadError = error;
