@@ -98,7 +98,7 @@ applyPreferences();
 function setActiveNav(label) {
   $$(".nav-icon").forEach(item => item.classList.toggle("active", item.getAttribute("aria-label") === label));
   const current = $(".topbar-current");
-  if (current) current.textContent = label === "Songs" ? "SONGS" : label === "Playlists" ? "PLAYLISTS" : label === "Profil" ? "PROFILE" : "HOME";
+  if (current) current.textContent = label === "Songs" ? "SONGS" : label === "Playlists" ? "PLAYLISTS" : (label === "Profil" || label === "Dancecard") ? "DANCECARD" : "HOME";
 }
 
 function scrollToSection(selector, label) {
@@ -639,7 +639,7 @@ $$(".nav-icon").forEach(icon => {
       setActiveNav("Home");
     } else if (label === "Songs") scrollToSection(".tracks-section", "Songs");
     else if (label === "Playlists") scrollToSection(".feature-section", "Playlists");
-    else if (label === "Profil") showProfile();
+    else if (label === "Profil" || label === "Dancecard") showProfile();
     else if (label === "Mehr Inhalte") showMoreContent();
     else if (label === "Einstellungen") openSettings();
   });
