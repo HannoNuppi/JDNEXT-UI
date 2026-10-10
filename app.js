@@ -51,7 +51,7 @@ function closeModal() {
 }
 
 function openModal(title, bodyMarkup, afterRender) {
-  $(".ui-modal").classList.remove("catalog-modal");
+  $(".ui-modal").classList.remove("catalog-modal", "dancecard-modal");
   stopDemoTimer();
   $("#modalContent").innerHTML =
     '<p class="modal-kicker">JDNEXT UI · PROTOTYP</p>' +
@@ -148,26 +148,75 @@ function showProfile() {
     openLoginModal();
     return;
   }
-  const display = accountProfile?.displayName || accountUser.displayName || accountUser.email || "TobiServices Account";
+
+  const display = accountProfile?.displayName || accountUser.displayName || accountUser.email || "Dance Player";
   const email = accountProfile?.email || accountUser.email || "(nicht verfügbar)";
   const tags = Array.isArray(accountProfile?.tags) ? accountProfile.tags : [];
-  const tagHtml = tags.length
-    ? tags.map(tag => '<span class="account-tag"></span>').join("")
-    : '<span class="account-tag muted-tag">Keine Tags</span>';
-  openModal("TobiServices Account",
-    '<p class="modal-copy">Du bist mit deinem Firebase-E-Mail-Konto angemeldet.</p>' +
-    '<div class="account-summary"><div class="account-avatar"></div><div><strong class="account-display"></strong><span class="account-username"></span></div></div>' +
-    '<div class="account-details"><span>ACCOUNT-ID</span><code class="account-uid"></code></div>' +
-    '<div class="account-tags"><span class="field-caption">TAGS</span><div class="tag-list">' + tagHtml + '</div></div>' +
+  const goldCoins = Number.isSafeInteger(accountProfile?.goldCoins) && accountProfile.goldCoins >= 0
+    ? accountProfile.goldCoins
+    : 0;
+
+  openModal("Dancecard",
+    '<div class="dancecard-layout">' +
+      '<section class="dancecard-hero-card" aria-label="Deine Dancecard">' +
+        '<div class="dancecard-orbit orbit-a"></div><div class="dancecard-orbit orbit-b"></div><div class="dancecard-orbit orbit-c"></div>' +
+        '<div class="dancecard-card-top"><div class="dancecard-brand">JD<span>NEXT</span></div><span class="dancecard-season">SEASON <b>01</b></span></div>' +
+        '<div class="dancecard-main"><div class="dancecard-avatar"></div><div class="dancecard-player-copy">' +
+          '<span class="dancecard-eyebrow">YOUR DANCECARD</span><h3 class="dancecard-name"></h3><p class="dancecard-email-preview"></p>' +
+        '</div></div>' +
+        '<div class="dancecard-card-bottom"><div><span>PLAYER CODE</span><code class="dancecard-player-code"></code></div><span class="dancecard-card-star" aria-hidden="true">✦</span></div>' +
+      '</section>' +
+      '<section class="dancecard-wallet" aria-label="Goldmünzen-Guthaben">' +
+        '<div class="dancecard-wallet-coin" aria-hidden="true">✦</div><div class="dancecard-wallet-copy">' +
+          '<span>GOLDMÜNZEN</span><small>GEMEINSAMES TOBISERVICES-GUTHABEN</small><strong class="dancecard-gold-coins">0</strong>' +
+        '</div><div class="dancecard-wallet-note">Verdienen ist<br>noch nicht verfügbar</div>' +
+      '</section>' +
+      '<section class="dancecard-social-row">' +
+        '<div class="dancecard-tag-panel"><span class="dancecard-section-label">YOUR TAGS</span><div class="dancecard-tag-list" id="dancecardTagPreview"></div></div>' +
+        '<div class="dancecard-status-panel"><span class="dancecard-section-label">ACCOUNT STATUS</span><strong>READY TO DANCE</strong><small>Dein TobiServices-Konto ist verbunden.</small></div>' +
+      '</section>' +
+      '<details class="dancecard-account-details">' +
+        '<summary><span>Kontoinformationen</span><small>E-Mail, Tags und vollständige Account-ID</small><b aria-hidden="true">＋</b></summary>' +
+        '<div class="dancecard-detail-grid">' +
+          '<div class="dancecard-detail-field"><span>E-MAIL-ADRESSE</span><code class="dancecard-email"></code></div>' +
+          '<div class="dancecard-detail-field"><span>VOLLSTÄNDIGE ACCOUNT-ID</span><code class="dancecard-uid"></code></div>' +
+          '<div class="dancecard-detail-field full"><span>ALLE TAGS</span><div class="dancecard-tag-list detail-tags" id="dancecardTagDetails"></div></div>' +
+        '</div>' +
+      '</details>' +
+    '</div>' +
     '<div class="modal-actions"><button class="ui-button primary" id="manageAccount">Account verwalten</button>' +
       (accountApi.isAdmin(accountProfile) ? '<button class="ui-button secondary" id="adminAccount">Admin Center</button>' : '') +
       '<button class="ui-button ghost" id="logoutAccount">Abmelden</button></div>',
     () => {
-      $(".account-display").textContent = display;
-      $(".account-username").textContent = email;
-      $(".account-uid").textContent = accountUser.uid;
-      $(".account-avatar").textContent = initialsFor(display);
-      $$(".account-tag:not(.muted-tag)").forEach((el, index) => { el.textContent = tags[index] || ""; });
+      $(".ui-modal").classList.add("dancecard-modal");
+      $(".dancecard-name").textContent = display;
+      $(".dancecard-email-preview").textContent = email;
+      $(".dancecard-email").textContent = email;
+      $(".dancecard-uid").textContent = accountUser.uid;
+      $(".dancecard-player-code").textContent = accountUser.uid.slice(-8).toUpperCase();
+      $(".dancecard-gold-coins").textContent = goldCoins.toLocaleString("de-DE");
+      $(".dancecard-avatar").textContent = initialsFor(display);
+
+      const renderTags = selector => {
+        const root = $(selector);
+        root.replaceChildren();
+        if (!tags.length) {
+          const empty = document.createElement("span");
+          empty.className = "dancecard-tag muted-tag";
+          empty.textContent = "Keine Tags";
+          root.appendChild(empty);
+          return;
+        }
+        tags.forEach(tag => {
+          const pill = document.createElement("span");
+          pill.className = "dancecard-tag";
+          pill.textContent = tag;
+          root.appendChild(pill);
+        });
+      };
+      renderTags("#dancecardTagPreview");
+      renderTags("#dancecardTagDetails");
+
       $("#manageAccount").addEventListener("click", () => {
         const url = accountApi.CONFIG?.accountUrl || FALLBACK_ACCOUNT_URL;
         window.location.href = url;
@@ -190,7 +239,6 @@ function showProfile() {
       });
     });
 }
-
 function initialsFor(value) {
   return String(value || "TS").trim().split(/\s+/).slice(0, 2).map(part => part[0] || "").join("").toUpperCase().slice(0, 2) || "TS";
 }
