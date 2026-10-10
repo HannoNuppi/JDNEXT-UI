@@ -51,6 +51,7 @@ function closeModal() {
 }
 
 function openModal(title, bodyMarkup, afterRender) {
+  $(".ui-modal").classList.remove("catalog-modal");
   stopDemoTimer();
   $("#modalContent").innerHTML =
     '<p class="modal-kicker">JDNEXT UI · PROTOTYP</p>' +
@@ -284,6 +285,7 @@ function openSearchModal(mode = "all") {
     '<div class="catalog-toolbar"><span class="search-count" id="searchCount" aria-live="polite"></span><button type="button" class="catalog-favorites-toggle" id="favoritesToggle" aria-pressed="false">☆ Favoriten</button><button type="button" class="catalog-layout-toggle" id="catalogLayoutToggle" aria-pressed="false">☷ Listenansicht</button></div>' +
     '<div class="catalog-grid" id="songCatalogGrid" aria-label="Songs"></div>',
     () => {
+      $(".ui-modal").classList.add("catalog-modal");
       const searchInput = $("#catalogSearch");
       const editionSelect = $("#catalogEdition");
       const genreSelect = $("#catalogGenre");
