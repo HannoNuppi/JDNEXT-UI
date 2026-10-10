@@ -4,13 +4,13 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="theme-color" content="#25104f" />
-  <meta name="description" content="Statischer JDNEXT-inspirierter UI-Prototyp – nur Oberfläche, ohne Spiellogik." />
-  <title>JDNEXT UI — Static Prototype</title>
+  <meta name="description" content="Interaktiver JDNEXT-inspirierter UI-Prototyp mit TobiServices-Konto. Keine echte Musik oder Spiellogik." />
+  <title>JDNEXT UI — Interactive Prototype</title>
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
   <div class="game-shell">
-    <aside class="sidebar" aria-label="Dekorative Navigation">
+    <aside class="sidebar" aria-label="Navigation">
       <div class="brand-mark" aria-label="JD NEXT">
         <span class="brand-jd">JD</span><span class="brand-next">NEXT</span>
       </div>
@@ -52,8 +52,8 @@
           <span class="topbar-current">HOME</span>
         </div>
         <div class="topbar-right">
-          <div class="season-pill"><span class="season-spark">✦</span><span>SEASON <b>01</b></span></div>
-          <div class="player-pill"><span class="player-avatar">JD</span><span class="player-name">PLAYER 01</span><span class="chevron">⌄</span></div>
+          <div class="season-pill" title="Saisoninformationen anzeigen"><span class="season-spark">✦</span><span>SEASON <b>01</b></span></div>
+          <div class="player-pill" title="TobiServices Account öffnen"><span class="player-avatar">JD</span><span class="player-name">PLAYER 01</span><span class="chevron">⌄</span></div>
         </div>
       </header>
 
@@ -79,7 +79,7 @@
         <div class="hero-caption"><span>FEATURED PLAYLIST</span><span class="caption-dot"></span><span>CURATED FOR YOU</span></div>
       </section>
 
-      <section class="content-section feature-section">
+      <section class="content-section feature-section" id="moodSection">
         <div class="section-heading"><div><p class="section-overline">PICK YOUR MOOD</p><h2>MADE FOR YOUR MOMENT</h2></div><div class="section-controls"><span class="counter">01 — 04</span><span class="circle-arrow">‹</span><span class="circle-arrow">›</span></div></div>
         <div class="tile-row mood-row">
           <article class="song-tile mood-tile tile-neon"><div class="tile-art abstract-neon"><span class="art-sun"></span><span class="art-ribbon ribbon-one"></span><span class="art-ribbon ribbon-two"></span><span class="art-figure"></span></div><div class="tile-meta"><span class="tile-tag">PLAYLIST</span><span class="tile-duration">◷ 18 MIN</span></div><h3>Neon Nights</h3><div class="tile-bottom"><span class="tile-sub">LIGHTS. MUSIC. YOU.</span><span class="rating-stars">★★★<i>★★</i></span></div></article>
@@ -89,7 +89,7 @@
         </div>
       </section>
 
-      <section class="content-section tracks-section">
+      <section class="content-section tracks-section" id="songSection">
         <div class="section-heading"><div><p class="section-overline">A LITTLE BIT OF EVERYTHING</p><h2>SONGS TO GET YOU STARTED</h2></div><div class="section-controls"><span class="view-all">VIEW ALL <b>↗</b></span><span class="circle-arrow">‹</span><span class="circle-arrow">›</span></div></div>
         <div class="tile-row track-row">
           <article class="track-tile"><div class="track-cover cover-prism"><span class="cover-shape"></span><span class="cover-type">PRISM<br />PARTY</span><span class="cover-mini-star">✦</span></div><div class="track-info"><h3>Prism Party</h3><p>THE LUMINOUS CLUB</p><div class="track-stats"><span class="difficulty"><i></i><i></i><i></i><i></i></span><span>MEDIUM</span><span class="track-rating">★★★★<i>★</i></span></div></div></article>
@@ -98,8 +98,9 @@
           <article class="track-tile"><div class="track-cover cover-afterglow"><span class="after-disc"></span><span class="after-zigzag"></span><span class="cover-type">AFTER<br />GLOW</span></div><div class="track-info"><h3>Afterglow</h3><p>DAYBREAK FM</p><div class="track-stats"><span class="difficulty"><i></i><i></i><i></i></span><span>EASY</span><span class="track-rating">★★★★<i>★</i></span></div></div></article>
         </div>
       </section>
-      <footer class="bottom-hints"><span><kbd>ESC</kbd> BACK</span><span><kbd>F</kbd> SEARCH</span><span class="prototype-note">STATIC UI PROTOTYPE <b>•</b> NO GAMEPLAY / NO NAVIGATION</span></footer>
+      <footer class="bottom-hints"><span><kbd>ESC</kbd> BACK</span><span><kbd>F</kbd> SEARCH</span><span class="prototype-note">INTERACTIVE UI DEMO <b>•</b> NO REAL AUDIO / NO GAMEPLAY</span></footer>
     </main>
   </div>
+<script type="module" src="app.js"></script>
 </body>
 </html>
