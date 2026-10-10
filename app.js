@@ -7,6 +7,7 @@ const FALLBACK_ACCOUNT_URL = "https://hannonuppi.github.io/Tobiservices-Account/
 let accountApi = null;
 let accountUser = null;
 let accountProfile = null;
+let maintenanceState = { enabled: false, message: "", loaded: false, error: null };
 let accountLoadError = null;
 let toastTimer = null;
 let demoTimer = null;
@@ -132,10 +133,24 @@ function updateBetaGate() {
   const isAdmin = Boolean(accountApi?.isAdmin?.(accountProfile));
   const hasBetaTag = Boolean(accountApi?.hasTag?.(accountProfile, "dance-beta"));
   const serviceDisabled = accountProfile?.disabled === true;
-  const allowed = Boolean(accountUser && accountProfile && !serviceDisabled && (isAdmin || hasBetaTag));
+  const hasBetaAccess = Boolean(accountUser && accountProfile && !serviceDisabled && (isAdmin || hasBetaTag));
+  const bypassActive = isAdmin && accountProfile?.maintenanceBypass === true;
+  const maintenanceReady = maintenanceState.loaded && !maintenanceState.error;
+  const maintenanceBlocks = Boolean(accountUser && accountProfile &&
+    (!maintenanceReady || (maintenanceState.enabled && !bypassActive)));
+  const allowed = hasBetaAccess && !maintenanceBlocks;
 
   if (shell) shell.hidden = !allowed;
   if (gate) gate.hidden = allowed;
+
+  const bypassButton = $("#betaMaintenanceBypass");
+  if (bypassButton) {
+    const canOfferBypass = Boolean(accountUser && accountProfile && isAdmin && !serviceDisabled &&
+      maintenanceReady && maintenanceState.enabled && !bypassActive);
+    bypassButton.hidden = !canOfferBypass;
+    bypassButton.disabled = false;
+    bypassButton.textContent = "Wartungsbypass aktivieren ↗";
+  }
 
   if (!gate || allowed) return allowed;
 
@@ -159,6 +174,20 @@ function updateBetaGate() {
     if (message) message.textContent = "Für dieses Konto wurde der Zugriff auf TobiServices-Dienste gesperrt. Bitte wende dich an einen Admin.";
     if (status) status.textContent = "Der Zugang bleibt gesperrt, auch wenn dein Konto den Beta-Tag besitzt.";
     if (button) button.textContent = "Konto wechseln ↗";
+  } else if ((isAdmin || hasBetaTag) && (!maintenanceState.loaded || maintenanceState.error)) {
+    if (title) title.textContent = "Wartungsstatus wird geprüft.";
+    if (message) message.textContent = maintenanceState.error
+      ? "Der Wartungsstatus konnte nicht sicher gelesen werden. Bitte lade die Seite neu."
+      : "JDNEXT prüft gerade, ob Wartungsarbeiten aktiv sind.";
+    if (status) status.textContent = "Der Zugang bleibt gesperrt, bis der Wartungsstatus bestätigt ist.";
+    if (button) button.textContent = "Konto wechseln ↗";
+  } else if ((isAdmin || hasBetaTag) && maintenanceState.enabled && !bypassActive) {
+    if (title) title.textContent = "Wir machen kurz Wartung.";
+    if (message) message.textContent = maintenanceState.message || "JDNEXT wird gerade gewartet. Bitte versuche es später erneut.";
+    if (status) status.textContent = isAdmin
+      ? "Du bist als Admin angemeldet. Aktiviere den Wartungsbypass, um fortzufahren."
+      : "Der Wartungsmodus ist aktiv. Bitte versuche es später erneut.";
+    if (button) button.textContent = "Konto wechseln ↗";
   } else {
     if (title) title.textContent = "Beta noch nicht freigeschaltet.";
     if (message) message.textContent = "Dieses Konto hat noch keinen Zugang zur JDNEXT Closed Beta. Der Zugriff wird von einem Admin freigeschaltet.";
@@ -171,12 +200,36 @@ function updateBetaGate() {
 async function initializeAccounts() {
   try {
     accountApi = await import(ACCOUNT_MODULE_URL);
+    if (typeof accountApi.onMaintenanceMode === "function") {
+      accountApi.onMaintenanceMode((settings, error) => {
+        maintenanceState = error
+          ? { enabled: true, message: "", loaded: false, error }
+          : {
+              enabled: settings?.enabled === true,
+              message: typeof settings?.message === "string" ? settings.message : "",
+              loaded: true,
+              error: null
+            };
+        updateBetaGate();
+        renderMaintenanceBypassControls();
+        if (accountUser && accountProfile &&
+            (error || (maintenanceState.enabled &&
+              !(accountApi.isAdmin(accountProfile) && accountProfile.maintenanceBypass === true))) &&
+            !overlay.hidden) {
+          closeModal();
+        }
+      });
+    } else {
+      maintenanceState = { enabled: false, message: "", loaded: true, error: null };
+      updateBetaGate();
+    }
     accountApi.onUser((user, profile) => {
       accountUser = user;
       accountProfile = profile;
       renderPlayer();
       updateBetaGate();
-      if (user && !overlay.hidden && $("#loginForm")) closeModal();
+      renderMaintenanceBypassControls();
+      if (user && !overlay.hidden && $("#loginForm") && !maintenanceState.enabled) closeModal();
     });
   } catch (error) {
     accountLoadError = error;
@@ -187,6 +240,9 @@ async function initializeAccounts() {
     if (status) status.textContent = "Der Accountdienst konnte nicht geladen werden. Bitte prüfe deine Verbindung und versuche es erneut.";
   }
 }
+$("#betaMaintenanceBypass")?.addEventListener("click", async event => {
+  await setCurrentMaintenanceBypass(true, event.currentTarget);
+});
 $("#betaLogin")?.addEventListener("click", async () => {
   if (accountUser && accountApi) {
     try {
@@ -201,6 +257,59 @@ $("#betaLogin")?.addEventListener("click", async () => {
 });
 updateBetaGate();
 initializeAccounts();
+
+function renderMaintenanceBypassControls() {
+  const active = accountProfile?.maintenanceBypass === true;
+  const state = $("#dancecardBypassState");
+  const description = $("#dancecardBypassDescription");
+  const button = $("#toggleMaintenanceBypass");
+  if (state) state.textContent = active ? "WARTUNGSBYPASS AKTIV" : "WARTUNGSBYPASS INAKTIV";
+  if (description) {
+    if (!maintenanceState.loaded || maintenanceState.error) {
+      description.textContent = "Der Wartungsstatus konnte nicht bestätigt werden. Lade die Seite neu.";
+    } else if (maintenanceState.enabled) {
+      description.textContent = active
+        ? "JDNEXT ist im Wartungsmodus. Dein Admin-Konto darf ihn umgehen."
+        : "JDNEXT ist im Wartungsmodus. Aktiviere den Bypass, um fortzufahren.";
+    } else {
+      description.textContent = active
+        ? "Der Bypass ist gespeichert und wird benötigt, wenn JDNEXT in Wartung ist."
+        : "Bei aktiver Wartung kannst du den Zugriff hier freischalten.";
+    }
+  }
+  if (button) {
+    button.textContent = active ? "Wartungsbypass deaktivieren" : "Wartungsbypass aktivieren";
+    button.disabled = !maintenanceState.loaded || Boolean(maintenanceState.error);
+  }
+}
+
+async function setCurrentMaintenanceBypass(enabled, control = null) {
+  if (!accountUser || !accountProfile || !accountApi?.isAdmin?.(accountProfile)) {
+    showToast("Der Wartungsbypass ist nur für angemeldete Admins verfügbar.");
+    return false;
+  }
+  if (!maintenanceState.loaded || maintenanceState.error || typeof accountApi.setMaintenanceBypass !== "function") {
+    showToast("Wartungsstatus konnte nicht bestätigt werden. Bitte lade die Seite neu.");
+    return false;
+  }
+  const button = control || $("#toggleMaintenanceBypass") || $("#betaMaintenanceBypass");
+  if (button) button.disabled = true;
+  try {
+    await accountApi.setMaintenanceBypass(Boolean(enabled));
+    accountProfile = { ...accountProfile, maintenanceBypass: Boolean(enabled) };
+    const canAccess = updateBetaGate();
+    renderMaintenanceBypassControls();
+    showToast(enabled ? "Wartungsbypass aktiviert." : "Wartungsbypass deaktiviert.");
+    if (!canAccess && maintenanceState.enabled && !overlay.hidden) closeModal();
+    return true;
+  } catch (error) {
+    console.error("Wartungsbypass konnte nicht gespeichert werden:", error);
+    showToast("Wartungsbypass konnte nicht gespeichert werden. Prüfe die Firestore-Regeln.");
+    return false;
+  } finally {
+    if (button?.isConnected) renderMaintenanceBypassControls();
+  }
+}
 
 function showProfile() {
   if (!accountUser) {
@@ -234,6 +343,9 @@ function showProfile() {
         '<div class="dancecard-tag-panel"><span class="dancecard-section-label">YOUR TAGS</span><div class="dancecard-tag-list" id="dancecardTagPreview"></div></div>' +
         '<div class="dancecard-status-panel"><span class="dancecard-section-label">ACCOUNT STATUS</span><strong>READY TO DANCE</strong><small>Dein TobiServices-Konto ist verbunden.</small></div>' +
       '</section>' +
+      (accountApi.isAdmin(accountProfile)
+        ? '<section class="dancecard-status-panel dancecard-maintenance-panel"><span class="dancecard-section-label">ADMIN CONTROL</span><strong id="dancecardBypassState"></strong><small id="dancecardBypassDescription"></small><button class="ui-button secondary" id="toggleMaintenanceBypass" type="button">Wartungsbypass aktivieren</button></section>'
+        : '') +
       '<details class="dancecard-account-details">' +
         '<summary><span>Kontoinformationen</span><small>E-Mail, Tags und vollständige Account-ID</small><b aria-hidden="true">＋</b></summary>' +
         '<div class="dancecard-detail-grid">' +
@@ -275,6 +387,10 @@ function showProfile() {
       };
       renderTags("#dancecardTagPreview");
       renderTags("#dancecardTagDetails");
+       renderMaintenanceBypassControls();
+       $("#toggleMaintenanceBypass")?.addEventListener("click", async event => {
+         await setCurrentMaintenanceBypass(accountProfile?.maintenanceBypass !== true, event.currentTarget);
+       });
 
       $("#manageAccount").addEventListener("click", () => {
         const url = accountApi.CONFIG?.accountUrl || FALLBACK_ACCOUNT_URL;
