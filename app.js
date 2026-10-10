@@ -227,8 +227,8 @@ function openLoginModal() {
           console.error("TobiServices Login fehlgeschlagen:", error);
           const code = String(error?.code || "");
           message.className = "form-message error";
-          if (code.includes("unauthenticated")) message.textContent = "Benutzername oder Passwort ist falsch.";
-          else if (code.includes("invalid-argument")) message.textContent = error?.message || "Bitte prüfe Benutzername und Passwort.";
+          if (code.includes("auth/invalid-credential") || code.includes("auth/invalid-login-credentials") || code.includes("unauthenticated")) message.textContent = "E-Mail-Adresse oder Passwort ist falsch.";
+          else if (code.includes("invalid-argument")) message.textContent = error?.message || "Bitte prüfe E-Mail-Adresse und Passwort.";
           else if (code.includes("unavailable") || code.includes("failed-precondition")) message.textContent = "Der Accountdienst ist derzeit nicht bereit oder erreichbar.";
           else message.textContent = "Anmeldung fehlgeschlagen. Prüfe deine Verbindung und versuche es erneut.";
           submit.disabled = false;
