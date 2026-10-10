@@ -1,48 +1,51 @@
 # JDNEXT UI — Interactive Prototype
 
-Ein eigenständiger, responsiver Web-UI-Prototyp, der sich am allgemeinen Aufbau des neueren Just-Dance-Menüs orientiert. Die Song-Suche nutzt Titel und Artists aus den offiziellen Tracklists von Just Dance 2024 und 2025. Cover sind eigens gestaltete CSS-Platzhalter; Genre und Schwierigkeitsgrad sind Demo-Metadaten, keine offiziellen In-Game-Werte.
+Ein eigenständiger, responsiver Web-UI-Prototyp, der sich am allgemeinen Aufbau des neueren Just-Dance-Menüs orientiert. Die Song-Suche nutzt Titel und Artists aus Tracklists von Just Dance 2024 und 2025. Cover sind eigens gestaltete CSS-Platzhalter; Genre und Schwierigkeitsgrad sind Demo-Metadaten, keine offiziellen In-Game-Werte.
 
 ## Interaktionen
 
 - Navigation zu Home, Songs, Playlists, Suche, Profil, weiteren Inhalten und Einstellungen
-- Vollständige Katalogsuche mit Textsuche, Edition-, Genre- und Schwierigkeitsfiltern
+- Katalogsuche mit Textsuche, Edition-, Genre- und Schwierigkeitsfiltern
 - Sortierung nach Edition, Songtitel, Artist oder Demo-Schwierigkeit
 - Raster- und Listenansicht
 - Favoriten mit Speicherung im Browser
 - Song-Detailansicht und Demo-Player mit 30-Sekunden-Timer. **Keine echte Musik, Tanzanimation oder Wertung**
-- Karussell-Pfeile ordnen Song- und Playlist-Kacheln um
 - Einstellungen für reduzierte Bewegung und höheren Kontrast werden lokal im Browser gespeichert
-- Spielerprofil öffnet die gemeinsame TobiServices-Account-Anmeldung bzw. das Account-Menü
 
-## TobiServices Accounts
+## Firebase-Accounts und Tags
 
-Das UI verwendet das gemeinsame Client-Modul aus [Tobiservices-Account](https://github.com/HannoNuppi/Tobiservices-Account) über dessen veröffentlichte `auth-core.js`. Die Anmeldung erfolgt zentral mit TobiServices-Benutzername und Passwort. JDNEXT UI speichert weder Passwort noch Passwort-Hash und führt keine eigene Passwortprüfung durch.
+JDNEXT UI verwendet das gemeinsame Client-Modul aus [Tobiservices-Account](https://github.com/HannoNuppi/Tobiservices-Account) und meldet Nutzer über **Firebase Authentication (E-Mail + Passwort)** an. Beim ersten Login erzeugt die geschützte Cloud Function `ensureUserProfile` ein Profil für die UID, falls es noch fehlt. Dieses Profil bekommt anfangs immer `tags: []`.
 
-Die Verbindung setzt voraus, dass GitHub Pages für `Tobiservices-Account` und das Firebase-/Cloud-Functions-Backend korrekt veröffentlicht sind. Für die Anmeldung muss die Website über HTTPS bzw. eine geeignete lokale Entwicklungsumgebung geöffnet werden.
+Admin-Rechte werden ausschließlich über das Tag `admin` in `users/{uid}.tags` bestimmt. Das JDNEXT-UI kann selbst keine Admin-Rechte vergeben und speichert keine Passwörter. Die Firestore-Regeln lassen Client-Schreibzugriffe auf Nutzerprofile nicht zu; Tag-Änderungen erfolgen über geschützte Cloud Functions.
 
-## Administrator-Setup
+## Ersten Admin sicher einrichten
 
-Die Datei für das Admin-Setup ist absichtlich nicht in der Menü-Navigation verlinkt und trägt `noindex`. Das ist **keine** Zugriffskontrolle: Die Berechtigung wird ausschließlich vom bestehenden Backend durchgesetzt.
+Für das erste Admin-Konto ist eine einmalige Änderung in der vertrauenswürdigen Firebase Console erforderlich:
 
-- Der Erst-Admin kann nur mit dem geheimen Bootstrap-Schlüssel angelegt werden.
-- Das vorhandene Backend erlaubt Bootstrap nur, wenn noch kein Admin-Account besteht.
-- Wenn bereits ein Admin existiert, muss ein weiterer Admin im angemeldeten Admin-Modus erstellt werden. Die Seite verwendet dazu die bereits vorhandenen, geschützten Funktionen zum Account-Erstellen und Setzen des `admin`-Tags.
-- Bootstrap-Schlüssel und Passwörter stehen nicht als Konstanten im Repository und werden nicht in `localStorage` gespeichert.
+1. Firebase Console → Authentication → Users öffnen und die UID des eigenen Kontos kopieren.
+2. Firestore Database → `users/{UID}) öffnen bzw. das Dokument mit genau dieser UID anlegen.
+3. `email` und `displayName` als Strings und `tags` als Array mit dem String `admin` setzen. Für ein neues Dokument außerdem `createdAt` und `lastProfileChangeAt` als Timestamps hinzufügen.
 
-## Starten
+Danach können Admins weitere Konten in der Tag-Verwaltung freischalten. Es gibt bewusst keinen öffentlichen, unangemeldeten Endpunkt zur Rechtevergabe.
+
+Die Datei `account-setup-7f3c.html` ist nicht in der Navigation verlinkt und trägt `noindex`. Sie ist für eingeloggte Admins zum Verwalten von Tags gedacht. Ihr versteckter Pfad ist keine Sicherheitsgrenze: Jeder Tag-Schreibvorgang wird serverseitig autorisiert.
+
+## Starten und bereitstellen
 
 `index.html` direkt im Browser öffnen oder GitHub Pages unter **Settings → Pages** auf Branch `main` und Verzeichnis `/ (root)` einstellen.
+
+Damit native E-Mail-Konten und Tag-Rollen funktionieren, muss das Firebase-Backend aus dem Repository [Tobiservices-Account](https://github.com/HannoNuppi/Tobiservices-Account) veröffentlicht sein:
+
+`firebase deploy --only functions,firestore`
+
+Bestätige beim Deploy die Entfernung der alten Function `bootstrapTobiAdmin`, falls Firebase danach fragt. GitHub-Pages- und Firebase-Liveverhalten wurden hier nicht end-to-end im Browser getestet.
 
 ## Dateien
 
 - `index.html` — Menüstruktur
 - `styles.css` — Layout, responsives Design und Dialog-/Katalogstile
-- `app.js` — UI-Interaktionen, Song-Katalog und TobiServices-Account-Verbindung
+- `app.js` — UI-Interaktionen, Song-Katalog und Firebase-E-Mail-Anmeldung
+- `account-setup-7f3c.html` — nicht verlinkte Admin-Tag-Verwaltung mit Anmeldung
 - `.nojekyll` — Vorbereitung für GitHub Pages
 
-## Tracklist-Quellen
-
-- [Ubisoft: Just Dance 2024 Edition Song List](https://news.ubisoft.com/en-au/article/4XASVBQVlNLtGtyO6fj1DQ/just-dance-2024-edition-song-list-and-new-mode-details)
-- [Ubisoft: Just Dance 2025 Edition](https://news.ubisoft.com/en-gb/article/yJEMRMtbY21JaJZ6JOBMT/just-dance-2025-edition-just-dance-vr-welcome-to-dancity-available-now)
-
-Fan-/Konzeptprojekt, nicht offiziell und nicht mit Ubisoft verbunden. Eigenständige Annäherung an den allgemeinen UI-Stil; keine Original-Songcover oder sonstigen offiziellen Spieldateien enthalten.
+Fan-/Konzeptprojekt, nicht offiziell und nicht mit Ubisoft verbunden. Keine Original-Songcover oder sonstigen offiziellen Spieldateien enthalten.
