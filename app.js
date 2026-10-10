@@ -126,6 +126,42 @@ function renderPlayer() {
   pill.setAttribute("aria-label", "TobiServices Account: " + display);
 }
 
+function updateBetaGate() {
+  const gate = $("#betaGate");
+  const shell = $("#gameShell");
+  const isAdmin = Boolean(accountApi?.isAdmin?.(accountProfile));
+  const hasBetaTag = Boolean(accountApi?.hasTag?.(accountProfile, "dance-beta"));
+  const allowed = Boolean(accountUser && accountProfile && (isAdmin || hasBetaTag));
+
+  if (shell) shell.hidden = !allowed;
+  if (gate) gate.hidden = allowed;
+
+  if (!gate || allowed) return allowed;
+
+  const title = $("#betaGateTitle");
+  const message = $("#betaGateMessage");
+  const status = $("#betaGateStatus");
+  const button = $("#betaLogin");
+
+  if (!accountUser) {
+    if (title) title.textContent = "Dein nächster Dancefloor wartet.";
+    if (message) message.textContent = "Melde dich mit deinem TobiServices-Konto an, um die geschlossene Beta zu öffnen.";
+    if (status) status.innerHTML = 'Zugriff erhalten Konten mit dem Tag <code>dance-beta</code> oder <code>admin</code>.';
+    if (button) button.textContent = "Mit TobiServices anmelden ↗";
+  } else if (!accountProfile) {
+    if (title) title.textContent = "Dein Zugang wird geprüft.";
+    if (message) message.textContent = "Du bist angemeldet, aber dein Berechtigungsprofil konnte nicht geladen werden. Bitte versuche es erneut.";
+    if (status) status.textContent = "Die Beta bleibt geschlossen, bis dein Zugriff bestätigt wurde.";
+    if (button) button.textContent = "Konto wechseln ↗";
+  } else {
+    if (title) title.textContent = "Beta noch nicht freigeschaltet.";
+    if (message) message.textContent = "Dieses Konto hat noch keinen Zugang zur JDNEXT Closed Beta. Der Zugriff wird von einem Admin freigeschaltet.";
+    if (status) status.innerHTML = 'Benötigter Tag: <code>dance-beta</code> oder <code>admin</code>.';
+    if (button) button.textContent = "Anderes Konto verwenden ↗";
+  }
+  return false;
+}
+
 async function initializeAccounts() {
   try {
     accountApi = await import(ACCOUNT_MODULE_URL);
@@ -133,14 +169,31 @@ async function initializeAccounts() {
       accountUser = user;
       accountProfile = profile;
       renderPlayer();
+      updateBetaGate();
       if (user && !overlay.hidden && $("#loginForm")) closeModal();
     });
   } catch (error) {
     accountLoadError = error;
     console.error("TobiServices Account konnte nicht geladen werden:", error);
     renderPlayer();
+    updateBetaGate();
+    const status = $("#betaGateStatus");
+    if (status) status.textContent = "Der Accountdienst konnte nicht geladen werden. Bitte prüfe deine Verbindung und versuche es erneut.";
   }
 }
+$("#betaLogin")?.addEventListener("click", async () => {
+  if (accountUser && accountApi) {
+    try {
+      await accountApi.signOut();
+    } catch (error) {
+      console.error("Abmelden vor Kontowechsel fehlgeschlagen:", error);
+      showToast("Konto konnte nicht gewechselt werden. Bitte Seite neu laden.");
+      return;
+    }
+  }
+  openLoginModal();
+});
+updateBetaGate();
 initializeAccounts();
 
 function showProfile() {
@@ -246,8 +299,8 @@ function initialsFor(value) {
 function openLoginModal() {
   if (!accountApi) {
     openModal("TobiServices Login",
-      '<p class="modal-copy">Das gemeinsame Account-Modul ist gerade nicht erreichbar. Du kannst den zentralen Login separat öffnen.</p>' +
-      '<div class="modal-actions"><a class="ui-button primary link-button" href="' + FALLBACK_LOGIN_URL + '">Zum TobiServices Login ↗</a></div>');
+      '<p class="modal-copy">Das gemeinsame Account-Modul ist gerade nicht erreichbar. Öffne den zentralen Login und kehre danach zur Beta zurück.</p>' +
+      '<div class="modal-actions"><a class="ui-button primary link-button" href="' + FALLBACK_LOGIN_URL + '?return=' + encodeURIComponent(window.location.href) + '">Zum TobiServices Login ↗</a></div>');
     return;
   }
   openModal("Mit TobiServices anmelden",
