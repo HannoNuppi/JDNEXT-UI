@@ -476,3 +476,12 @@ body{margin:0;color:var(--white);font-family:Inter,Arial,sans-serif;background:r
   .beta-gate-orb-two{right:12%;top:42%;width:75px;height:75px}
   .beta-gate-footer{font-size:7px;letter-spacing:.8px}
 }
+
+
+/* JDNEXT maintenance bypass controls */
+.beta-gate-actions{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.beta-gate-button[hidden]{display:none!important}
+.beta-gate-button-secondary{background:linear-gradient(90deg,#fff18c,#62f7ff);box-shadow:0 10px 30px #62f7ff2b;color:#160d38}
+.dancecard-maintenance-panel{display:grid;gap:8px;margin-top:10px}
+.dancecard-maintenance-panel button{justify-self:start;margin-top:4px}
+@media(max-width:600px){.beta-gate-actions{display:grid}.beta-gate-actions .beta-gate-button{width:100%}.dancecard-maintenance-panel button{width:100%}}
