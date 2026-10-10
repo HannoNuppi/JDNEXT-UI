@@ -23,7 +23,7 @@ Admin-Rechte werden ausschließlich über das Tag `admin` in `users/{uid}.tags` 
 Für das erste Admin-Konto ist eine einmalige Änderung in der vertrauenswürdigen Firebase Console erforderlich:
 
 1. Firebase Console → Authentication → Users öffnen und die UID des eigenen Kontos kopieren.
-2. Firestore Database → `users/{UID}) öffnen bzw. das Dokument mit genau dieser UID anlegen.
+2. Firestore Database → `users` öffnen und das Dokument mit genau dieser UID (`users/{UID}`) öffnen bzw. neu anlegen.
 3. `email` und `displayName` als Strings und `tags` als Array mit dem String `admin` setzen. Für ein neues Dokument außerdem `createdAt` und `lastProfileChangeAt` als Timestamps hinzufügen.
 
 Danach können Admins weitere Konten in der Tag-Verwaltung freischalten. Es gibt bewusst keinen öffentlichen, unangemeldeten Endpunkt zur Rechtevergabe.
