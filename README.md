@@ -20,9 +20,9 @@ Die Zugangssperre auf GitHub Pages ist eine UI-Sperre, keine sichere Auslieferun
 
 ## Firebase-Accounts und Tags
 
-JDNEXT UI verwendet das gemeinsame Client-Modul aus [Tobiservices-Account](https://github.com/HannoNuppi/Tobiservices-Account) und meldet Nutzer über **Firebase Authentication (E-Mail + Passwort)** an. Beim ersten Login erzeugt die geschützte Cloud Function `ensureUserProfile` ein Profil für die UID, falls es noch fehlt. Dieses Profil bekommt anfangs immer `tags: []`.
+JDNEXT UI verwendet das gemeinsame Client-Modul aus [Tobiservices-Account](https://github.com/HannoNuppi/Tobiservices-Account) und meldet Nutzer über **Firebase Authentication (E-Mail + Passwort)** an. Beim ersten Login wird das Profil `users/{UID}` direkt über Firestore angelegt, sofern die veröffentlichten Firestore-Regeln dies für das eigene Konto erlauben. Neue Profile beginnen immer mit `tags: []` und `goldCoins: 0`.
 
-Admin-Rechte werden ausschließlich über das Tag `admin` in `users/{uid}.tags` bestimmt. Das JDNEXT-UI kann selbst keine Admin-Rechte vergeben und speichert keine Passwörter. Die Firestore-Regeln lassen Client-Schreibzugriffe auf Nutzerprofile nicht zu; Tag-Änderungen erfolgen über geschützte Cloud Functions.
+Admin-Rechte werden über das Tag `admin` in `users/{uid}.tags` bestimmt. Nutzer können ihre Tags nicht ändern; Firestore Security Rules erlauben Tag-Schreibzugriffe nur bereits bestehenden Admins. Das JDNEXT-UI speichert keine Passwörter und benötigt keine Cloud Functions für die Anmeldung.
 
 ## Ersten Admin sicher einrichten
 
@@ -40,11 +40,7 @@ Die Datei `account-setup-7f3c.html` ist nicht in der Navigation verlinkt und tr�
 
 `index.html` direkt im Browser öffnen oder GitHub Pages unter **Settings → Pages** auf Branch `main` und Verzeichnis `/ (root)` einstellen.
 
-Damit native E-Mail-Konten und Tag-Rollen funktionieren, muss das Firebase-Backend aus dem Repository [Tobiservices-Account](https://github.com/HannoNuppi/Tobiservices-Account) veröffentlicht sein:
-
-`firebase deploy --only functions,firestore`
-
-Bestätige beim Deploy die Entfernung der alten Function `bootstrapTobiAdmin`, falls Firebase danach fragt. GitHub-Pages- und Firebase-Liveverhalten wurden hier nicht end-to-end im Browser getestet.
+Damit E-Mail-Konten und Tag-Rollen funktionieren, öffne Firebase Console → Firestore Database → Rules und veröffentliche den Inhalt von [`firestore.rules`](https://github.com/HannoNuppi/Tobiservices-Account/blob/main/firestore.rules). Das geht ohne Terminal und ohne Blaze. Die Anwendung benutzt für neue Konten und die Tag-Verwaltung keine Cloud Functions. GitHub-Pages- und Firebase-Liveverhalten wurden hier nicht end-to-end im Browser getestet.
 
 ## Dateien
 
