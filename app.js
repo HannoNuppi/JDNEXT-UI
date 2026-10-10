@@ -131,7 +131,8 @@ function updateBetaGate() {
   const shell = $("#gameShell");
   const isAdmin = Boolean(accountApi?.isAdmin?.(accountProfile));
   const hasBetaTag = Boolean(accountApi?.hasTag?.(accountProfile, "dance-beta"));
-  const allowed = Boolean(accountUser && accountProfile && (isAdmin || hasBetaTag));
+  const serviceDisabled = accountProfile?.disabled === true;
+  const allowed = Boolean(accountUser && accountProfile && !serviceDisabled && (isAdmin || hasBetaTag));
 
   if (shell) shell.hidden = !allowed;
   if (gate) gate.hidden = allowed;
@@ -152,6 +153,11 @@ function updateBetaGate() {
     if (title) title.textContent = "Dein Zugang wird geprüft.";
     if (message) message.textContent = "Du bist angemeldet, aber dein Berechtigungsprofil konnte nicht geladen werden. Bitte versuche es erneut.";
     if (status) status.textContent = "Die Beta bleibt geschlossen, bis dein Zugriff bestätigt wurde.";
+    if (button) button.textContent = "Konto wechseln ↗";
+  } else if (serviceDisabled) {
+    if (title) title.textContent = "Der Dienstzugriff ist pausiert.";
+    if (message) message.textContent = "Für dieses Konto wurde der Zugriff auf TobiServices-Dienste gesperrt. Bitte wende dich an einen Admin.";
+    if (status) status.textContent = "Der Zugang bleibt gesperrt, auch wenn dein Konto den Beta-Tag besitzt.";
     if (button) button.textContent = "Konto wechseln ↗";
   } else {
     if (title) title.textContent = "Beta noch nicht freigeschaltet.";
