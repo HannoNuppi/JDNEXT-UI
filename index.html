@@ -22,7 +22,10 @@
         <p class="beta-gate-overline">TOBISERVICES × JDNEXT</p>
         <h1 id="betaGateTitle">Dein nächster Dancefloor wartet.</h1>
         <p id="betaGateMessage" class="beta-gate-message">Melde dich mit deinem TobiServices-Konto an, um die geschlossene Beta zu öffnen.</p>
-        <button class="beta-gate-button" id="betaLogin" type="button">Mit TobiServices anmelden <span aria-hidden="true">↗</span></button>
+        <div class="beta-gate-actions">
+          <button class="beta-gate-button" id="betaLogin" type="button">Mit TobiServices anmelden <span aria-hidden="true">↗</span></button>
+          <button class="beta-gate-button beta-gate-button-secondary" id="betaMaintenanceBypass" type="button" hidden>Wartungsbypass aktivieren <span aria-hidden="true">↗</span></button>
+        </div>
         <p class="beta-gate-status" id="betaGateStatus" role="status" aria-live="polite">Zugriff erhalten Konten mit dem Tag <code>dance-beta</code> oder <code>admin</code>.</p>
       </main>
       <footer class="beta-gate-footer"><span>ACCESS CONTROLLED</span><span>JD NEXT <b>•</b> CLOSED BETA</span></footer>
