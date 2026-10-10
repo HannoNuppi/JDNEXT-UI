@@ -99,10 +99,12 @@
         const displayName = document.getElementById("bootstrapDisplayName").value.trim();
         const password = document.getElementById("bootstrapPassword").value;
         const key = document.getElementById("bootstrapKey").value;
+        const passwordInput = document.getElementById("bootstrapPassword");
+        const keyInput = document.getElementById("bootstrapKey");
         try {
           await bootstrapAdmin(username, password, key, displayName);
-          document.getElementById("bootstrapPassword").value = "";
-          document.getElementById("bootstrapKey").value = "";
+          if (passwordInput) passwordInput.value = "";
+          if (keyInput) keyInput.value = "";
           submitting = false;
           renderAdminCreator("Der erste Admin wurde vom TobiServices-Backend erstellt und angemeldet.");
         } catch (error) {
