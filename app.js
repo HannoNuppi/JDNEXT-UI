@@ -74,7 +74,7 @@ document.addEventListener("keydown", event => {
     else window.scrollTo({ top: 0, behavior: prefersReducedMotion() ? "auto" : "smooth" });
   }
   if ((event.key === "f" || event.key === "F") &&
-      !overlay.hidden === false &&
+      overlay.hidden &&
       !["INPUT", "TEXTAREA", "SELECT"].includes(document.activeElement?.tagName)) {
     event.preventDefault();
     openSearchModal("all");
@@ -295,6 +295,7 @@ function openCardDetail(card) {
   selectedCard = card;
   $$(".selected-tile").forEach(el => el.classList.remove("selected-tile"));
   card.classList.add("selected-tile");
+  $(".song-tile, .track-tile").forEach(el => el.setAttribute("aria-pressed", String(el === card)));
   const title = card.querySelector("h3")?.textContent?.trim() || "Unbenannter Eintrag";
   const isPlaylist = card.classList.contains("mood-tile");
   const subtitle = card.querySelector(".tile-sub, .track-info p")?.textContent?.trim() || (isPlaylist ? "PLAYLIST" : "SONG");
@@ -411,6 +412,9 @@ function showMoreContent() {
 $$(".nav-icon").forEach(icon => {
   icon.setAttribute("role", "button");
   icon.tabIndex = 0;
+  icon.addEventListener("keydown", event => {
+    if (event.key === "Enter" || event.key === " ") { event.preventDefault(); icon.click(); }
+  });
   icon.addEventListener("click", () => {
     const label = icon.getAttribute("aria-label");
     if (label === "Benachrichtigungen") showNotifications();
