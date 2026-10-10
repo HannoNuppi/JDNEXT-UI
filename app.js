@@ -237,60 +237,226 @@ function openLoginModal() {
     });
 }
 
+const SONG_CATALOG = [
+  { id:"flowers", title:"Flowers", artist:"Miley Cyrus", edition:2024, genre:"Pop", difficulty:"Easy", duration:"3:20", accent:"#ff8b47", accent2:"#f23591" },
+  { id:"calm-down", title:"Calm Down", artist:"Rema", edition:2024, genre:"Afrobeats", difficulty:"Easy", duration:"3:58", accent:"#f9ab45", accent2:"#d92776" },
+  { id:"butter", title:"Butter", artist:"BTS", edition:2024, genre:"K-pop", difficulty:"Medium", duration:"2:44", accent:"#e5c752", accent2:"#ef7f43" },
+  { id:"cure-for-me", title:"Cure For Me", artist:"AURORA", edition:2024, genre:"Electropop", difficulty:"Medium", duration:"3:19", accent:"#62dfd0", accent2:"#5262df" },
+  { id:"despecha", title:"DESPECHÁ", artist:"ROSALÍA", edition:2024, genre:"Latin", difficulty:"Hard", duration:"2:37", accent:"#ff8d4d", accent2:"#e53b62" },
+  { id:"gimme-more", title:"Gimme More", artist:"Britney Spears", edition:2024, genre:"Dance-pop", difficulty:"Hard", duration:"3:12", accent:"#dd49d4", accent2:"#4923a9" },
+  { id:"how-you-like-that", title:"How You Like That", artist:"BLACKPINK", edition:2024, genre:"K-pop", difficulty:"Hard", duration:"3:00", accent:"#f45aa9", accent2:"#5934dc" },
+  { id:"kill-bill", title:"Kill Bill", artist:"SZA", edition:2024, genre:"R&B", difficulty:"Medium", duration:"2:34", accent:"#c0d750", accent2:"#248f82" },
+  { id:"makeba", title:"Makeba", artist:"Jain", edition:2024, genre:"World pop", difficulty:"Medium", duration:"3:43", accent:"#ff9e43", accent2:"#e84d3a" },
+  { id:"sail", title:"Sail", artist:"AWOLNATION", edition:2024, genre:"Alternative rock", difficulty:"Hard", duration:"4:18", accent:"#e55a49", accent2:"#70275c" },
+  { id:"seven", title:"Seven", artist:"Jung Kook ft. Latto", edition:2024, genre:"K-pop", difficulty:"Medium", duration:"3:04", accent:"#68c7ef", accent2:"#7168d8" },
+  { id:"treasure", title:"Treasure", artist:"Bruno Mars", edition:2024, genre:"Funk / Pop", difficulty:"Medium", duration:"2:58", accent:"#ffca48", accent2:"#e94c8a" },
+  { id:"vampire", title:"vampire", artist:"Olivia Rodrigo", edition:2024, genre:"Pop rock", difficulty:"Medium", duration:"3:39", accent:"#a58aff", accent2:"#d83f8f" },
+  { id:"wasabi", title:"Wasabi", artist:"Little Mix", edition:2024, genre:"Pop", difficulty:"Hard", duration:"2:34", accent:"#92e74e", accent2:"#e7459e" },
+  { id:"espresso", title:"Espresso", artist:"Sabrina Carpenter", edition:2025, genre:"Pop", difficulty:"Medium", duration:"2:55", accent:"#d49a6a", accent2:"#e94d8a" },
+  { id:"yes-and", title:"yes, and?", artist:"Ariana Grande", edition:2025, genre:"Dance-pop", difficulty:"Medium", duration:"3:34", accent:"#b5a2ff", accent2:"#ec8fd3" },
+  { id:"poker-face", title:"Poker Face", artist:"Lady Gaga", edition:2025, genre:"Dance-pop", difficulty:"Hard", duration:"3:58", accent:"#e9dd55", accent2:"#d33b92" },
+  { id:"lunch", title:"LUNCH", artist:"Billie Eilish", edition:2025, genre:"Pop", difficulty:"Hard", duration:"3:00", accent:"#91f05e", accent2:"#14a88c" },
+  { id:"basket-case", title:"Basket Case", artist:"Green Day", edition:2025, genre:"Punk rock", difficulty:"Hard", duration:"3:02", accent:"#b7da59", accent2:"#e95b40" },
+  { id:"calabria-2007", title:"Calabria 2007", artist:"Enur ft. Natasja", edition:2025, genre:"Dancehall", difficulty:"Medium", duration:"3:05", accent:"#4ce0db", accent2:"#e84a9c" },
+  { id:"training-season", title:"Training Season", artist:"Dua Lipa", edition:2025, genre:"Disco-pop", difficulty:"Hard", duration:"3:29", accent:"#ffe16b", accent2:"#f05c9b" },
+  { id:"unstoppable", title:"Unstoppable", artist:"Sia", edition:2025, genre:"Pop", difficulty:"Medium", duration:"3:37", accent:"#65d7f2", accent2:"#6d61d9" }
+];
+
+const CATALOG_FAVORITES_KEY = "jdnext-catalog-favorites-v1";
+let catalogFavorites = new Set();
+try { catalogFavorites = new Set(JSON.parse(localStorage.getItem(CATALOG_FAVORITES_KEY) || "[]")); } catch {}
+
+function saveCatalogFavorites() {
+  try { localStorage.setItem(CATALOG_FAVORITES_KEY, JSON.stringify([...catalogFavorites])); }
+  catch { showToast("Favoriten konnten nicht dauerhaft gespeichert werden."); }
+}
+
 function openSearchModal(mode = "all") {
-  const cards = $$(".song-tile, .track-tile").filter(card => mode !== "songs" || card.classList.contains("track-tile"));
-  const placeholder = mode === "songs" ? "Song oder Artist suchen …" : "Song oder Playlist suchen …";
-  openModal(mode === "songs" ? "Song-Suche" : "Katalog durchsuchen",
-    '<p class="modal-copy">Die Suche filtert die aktuell im Prototyp angezeigten Einträge.</p>' +
-    '<input class="search-input" id="catalogSearch" type="search" placeholder="' + placeholder + '" autocomplete="off" aria-label="Katalog durchsuchen">' +
-    '<p class="search-count" id="searchCount"></p><div class="search-results" id="searchResults"></div>',
+  openModal(mode === "songs" ? "Songs durchsuchen" : "Song-Katalog",
+    '<p class="modal-copy">Durchsuche Songs aus Just Dance 2024 und 2025. Cover sind eigenständige Platzhalter; Schwierigkeitsgrade und Genres sind Demo-Metadaten, keine offiziellen In-Game-Werte.</p>' +
+    '<div class="catalog-controls">' +
+      '<label class="catalog-search-field"><span>SUCHEN</span><input class="search-input" id="catalogSearch" type="search" placeholder="Song, Artist oder Genre …" autocomplete="off" aria-label="Songs suchen"></label>' +
+      '<label class="catalog-filter"><span>EDITION</span><select id="catalogEdition"><option value="all">Alle Editionen</option><option value="2025">Just Dance 2025</option><option value="2024">Just Dance 2024</option></select></label>' +
+      '<label class="catalog-filter"><span>GENRE</span><select id="catalogGenre"><option value="all">Alle Genres</option></select></label>' +
+      '<label class="catalog-filter"><span>SCHWIERIGKEIT</span><select id="catalogDifficulty"><option value="all">Alle</option><option>Easy</option><option>Medium</option><option>Hard</option></select></label>' +
+      '<label class="catalog-filter catalog-sort"><span>SORTIEREN</span><select id="catalogSort"><option value="edition">Neueste Edition</option><option value="title">Titel A–Z</option><option value="artist">Artist A–Z</option><option value="difficulty">Schwierigkeit</option></select></label>' +
+    '</div>' +
+    '<div class="catalog-toolbar"><span class="search-count" id="searchCount" aria-live="polite"></span><button type="button" class="catalog-favorites-toggle" id="favoritesToggle" aria-pressed="false">☆ Favoriten</button><button type="button" class="catalog-layout-toggle" id="catalogLayoutToggle" aria-pressed="false">☷ Listenansicht</button></div>' +
+    '<div class="catalog-grid" id="songCatalogGrid" aria-label="Songs"></div>',
     () => {
-      const results = $("#searchResults");
       const searchInput = $("#catalogSearch");
-      const entries = cards.map(card => {
-        const button = document.createElement("button");
-        button.type = "button";
-        button.className = "search-result";
-        const title = card.querySelector("h3")?.textContent?.trim() || "Unbenannter Eintrag";
-        const subtitle = card.querySelector(".tile-sub, .track-info p")?.textContent?.trim() || "JDNEXT Demo";
-        const cover = card.querySelector(".tile-art, .track-cover");
-        const swatch = cover ? getComputedStyle(cover).backgroundImage : "";
-        const copy = document.createElement("span");
-        copy.className = "search-result-copy";
-        const strong = document.createElement("strong");
-        strong.textContent = title;
-        const small = document.createElement("small");
-        small.textContent = subtitle;
-        copy.append(strong, small);
-        const type = document.createElement("span");
-        type.className = "search-result-type";
-        type.textContent = card.classList.contains("mood-tile") ? "PLAYLIST" : "SONG";
-        button.append(copy, type);
-        button.addEventListener("click", () => {
-          closeModal();
-          card.scrollIntoView({ behavior: prefersReducedMotion() ? "auto" : "smooth", block: "center" });
-          window.setTimeout(() => openCardDetail(card), 180);
-        });
-        button.dataset.search = (title + " " + subtitle).toLowerCase();
-        if (swatch) button.style.setProperty("--result-art", swatch);
-        return button;
+      const editionSelect = $("#catalogEdition");
+      const genreSelect = $("#catalogGenre");
+      const difficultySelect = $("#catalogDifficulty");
+      const sortSelect = $("#catalogSort");
+      const grid = $("#songCatalogGrid");
+      const favoriteToggle = $("#favoritesToggle");
+      const layoutToggle = $("#catalogLayoutToggle");
+      const genres = [...new Set(SONG_CATALOG.map(song => song.genre))].sort((a,b)=>a.localeCompare(b));
+      genres.forEach(genre => {
+        const option = document.createElement("option");
+        option.value = genre;
+        option.textContent = genre;
+        genreSelect.appendChild(option);
       });
-      entries.forEach(button => results.appendChild(button));
-      const refresh = () => {
-        const query = searchInput.value.trim().toLowerCase();
-        let count = 0;
-        entries.forEach(button => {
-          const show = button.dataset.search.includes(query);
-          button.hidden = !show;
-          if (show) count++;
+      let favoritesOnly = false;
+      let listLayout = false;
+
+      function makeSongCard(song) {
+        const article = document.createElement("article");
+        article.className = "catalog-card";
+        article.style.setProperty("--cover-a", song.accent);
+        article.style.setProperty("--cover-b", song.accent2);
+
+        const main = document.createElement("button");
+        main.type = "button";
+        main.className = "catalog-card-main";
+        main.setAttribute("aria-label", song.title + " von " + song.artist + " öffnen");
+
+        const cover = document.createElement("span");
+        cover.className = "catalog-cover";
+        const coverTop = document.createElement("span");
+        coverTop.className = "catalog-cover-top";
+        const edition = document.createElement("span");
+        edition.textContent = "JUST DANCE " + song.edition;
+        const miniLogo = document.createElement("span");
+        miniLogo.className = "catalog-mini-logo";
+        miniLogo.textContent = "JD";
+        coverTop.append(edition, miniLogo);
+        const coverTitle = document.createElement("span");
+        coverTitle.className = "catalog-cover-title";
+        coverTitle.textContent = song.title;
+        const coverArtist = document.createElement("span");
+        coverArtist.className = "catalog-cover-artist";
+        coverArtist.textContent = song.artist;
+        const coverBottom = document.createElement("span");
+        coverBottom.className = "catalog-cover-bottom";
+        const genre = document.createElement("span");
+        genre.textContent = song.genre.toUpperCase();
+        const dots = document.createElement("span");
+        dots.className = "catalog-difficulty-dots difficulty-" + song.difficulty.toLowerCase();
+        for (let i=0;i<3;i++) {
+          const dot = document.createElement("i");
+          dots.appendChild(dot);
+        }
+        coverBottom.append(genre, dots);
+        cover.append(coverTop, coverTitle, coverArtist, coverBottom);
+
+        const info = document.createElement("span");
+        info.className = "catalog-card-info";
+        const title = document.createElement("strong");
+        title.className = "catalog-card-title";
+        title.textContent = song.title;
+        const artist = document.createElement("small");
+        artist.className = "catalog-card-artist";
+        artist.textContent = song.artist;
+        const meta = document.createElement("span");
+        meta.className = "catalog-card-meta";
+        const editionBadge = document.createElement("span");
+        editionBadge.textContent = "JD " + song.edition;
+        const difficultyBadge = document.createElement("span");
+        difficultyBadge.textContent = song.difficulty.toUpperCase();
+        meta.append(editionBadge, difficultyBadge);
+        info.append(title, artist, meta);
+        main.append(cover, info);
+        main.addEventListener("click", () => openCatalogSong(song));
+
+        const favorite = document.createElement("button");
+        favorite.type = "button";
+        favorite.className = "catalog-card-favorite";
+        favorite.textContent = catalogFavorites.has(song.id) ? "★" : "☆";
+        favorite.setAttribute("aria-label", catalogFavorites.has(song.id) ? "Favorit entfernen" : "Als Favorit markieren");
+        favorite.setAttribute("aria-pressed", String(catalogFavorites.has(song.id)));
+        favorite.addEventListener("click", event => {
+          event.stopPropagation();
+          if (catalogFavorites.has(song.id)) catalogFavorites.delete(song.id);
+          else catalogFavorites.add(song.id);
+          saveCatalogFavorites();
+          refresh();
         });
-        $("#searchCount").textContent = count + (count === 1 ? " Treffer" : " Treffer");
-      };
-      searchInput.addEventListener("input", refresh);
+        article.append(main, favorite);
+        return article;
+      }
+
+      function refresh() {
+        const query = searchInput.value.trim().toLocaleLowerCase("de");
+        let songs = SONG_CATALOG.filter(song => {
+          const searchable = [song.title, song.artist, song.genre, String(song.edition), "just dance " + song.edition].join(" ").toLocaleLowerCase("de");
+          return searchable.includes(query) &&
+            (editionSelect.value === "all" || String(song.edition) === editionSelect.value) &&
+            (genreSelect.value === "all" || song.genre === genreSelect.value) &&
+            (difficultySelect.value === "all" || song.difficulty === difficultySelect.value) &&
+            (!favoritesOnly || catalogFavorites.has(song.id));
+        });
+
+        if (sortSelect.value === "title") songs.sort((a,b)=>a.title.localeCompare(b.title));
+        else if (sortSelect.value === "artist") songs.sort((a,b)=>a.artist.localeCompare(b.artist));
+        else if (sortSelect.value === "difficulty") {
+          const rank = {Easy:1,Medium:2,Hard:3};
+          songs.sort((a,b)=>rank[a.difficulty]-rank[b.difficulty] || a.title.localeCompare(b.title));
+        } else songs.sort((a,b)=>b.edition-a.edition || a.title.localeCompare(b.title));
+
+        grid.replaceChildren();
+        grid.classList.toggle("list-layout", listLayout);
+        if (!songs.length) {
+          const empty = document.createElement("div");
+          empty.className = "catalog-empty";
+          empty.textContent = favoritesOnly && !catalogFavorites.size
+            ? "Noch keine Favoriten. Markiere Songs mit ☆, um sie hier zu sammeln."
+            : "Keine passenden Songs gefunden. Passe Suche oder Filter an.";
+          grid.appendChild(empty);
+        } else {
+          songs.forEach(song => grid.appendChild(makeSongCard(song)));
+        }
+        $("#searchCount").textContent = songs.length + (songs.length === 1 ? " SONG" : " SONGS") + " · " + catalogFavorites.size + " FAVORITEN";
+        favoriteToggle.setAttribute("aria-pressed", String(favoritesOnly));
+        favoriteToggle.textContent = favoritesOnly ? "★ Favoriten anzeigen" : "☆ Nur Favoriten";
+        layoutToggle.setAttribute("aria-pressed", String(listLayout));
+        layoutToggle.textContent = listLayout ? "▦ Rasteransicht" : "☷ Listenansicht";
+      }
+
+      [searchInput, editionSelect, genreSelect, difficultySelect, sortSelect].forEach(element => {
+        element.addEventListener(element === searchInput ? "input" : "change", refresh);
+      });
+      favoriteToggle.addEventListener("click", () => { favoritesOnly = !favoritesOnly; refresh(); });
+      layoutToggle.addEventListener("click", () => { listLayout = !listLayout; refresh(); });
       refresh();
+      searchInput.focus();
     });
 }
 
+function openCatalogSong(song) {
+  openModal(song.title,
+    '<div class="catalog-detail-cover" id="catalogDetailCover"><div class="catalog-detail-brand">JUST DANCE ' + song.edition + '</div><div class="catalog-detail-title" id="catalogDetailTitle"></div><div class="catalog-detail-artist" id="catalogDetailArtist"></div></div>' +
+    '<div class="catalog-detail-metadata"><span id="catalogDetailEdition"></span><span id="catalogDetailGenre"></span><span id="catalogDetailDifficulty"></span><span id="catalogDetailDuration"></span></div>' +
+    '<p class="modal-copy">Song- und Artistdaten stammen aus den Edition-Tracklists. Cover und Schwierigkeitsanzeige sind Platzhalter; dieser Prototyp enthält keine Audiodatei und startet kein echtes Gameplay.</p>' +
+    '<div class="modal-actions"><button class="ui-button primary" id="catalogDemoStart">▶ Demo-Player</button><button class="ui-button secondary" id="catalogFavoriteToggle"></button><button class="ui-button ghost" id="catalogBackToSearch">Zur Suche</button></div>',
+    () => {
+      const cover = $("#catalogDetailCover");
+      cover.style.setProperty("--cover-a", song.accent);
+      cover.style.setProperty("--cover-b", song.accent2);
+      $("#catalogDetailTitle").textContent = song.title;
+      $("#catalogDetailArtist").textContent = song.artist;
+      $("#catalogDetailEdition").textContent = "JUST DANCE " + song.edition;
+      $("#catalogDetailGenre").textContent = song.genre;
+      $("#catalogDetailDifficulty").textContent = "Demo: " + song.difficulty;
+      $("#catalogDetailDuration").textContent = song.duration;
+      const favoriteButton = $("#catalogFavoriteToggle");
+      const updateFavoriteLabel = () => {
+        favoriteButton.textContent = catalogFavorites.has(song.id) ? "★ Favorit gespeichert" : "☆ Als Favorit speichern";
+        favoriteButton.setAttribute("aria-pressed", String(catalogFavorites.has(song.id)));
+      };
+      updateFavoriteLabel();
+      favoriteButton.addEventListener("click", () => {
+        if (catalogFavorites.has(song.id)) catalogFavorites.delete(song.id);
+        else catalogFavorites.add(song.id);
+        saveCatalogFavorites();
+        updateFavoriteLabel();
+      });
+      $("#catalogDemoStart").addEventListener("click", () => startDemo(song.title, song.artist + " · JD " + song.edition));
+      $("#catalogBackToSearch").addEventListener("click", () => openSearchModal("songs"));
+    });
+}
 function openCardDetail(card) {
   selectedCard = card;
   $$(".selected-tile").forEach(el => el.classList.remove("selected-tile"));
