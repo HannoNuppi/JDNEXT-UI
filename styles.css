@@ -349,3 +349,84 @@ body{margin:0;color:var(--white);font-family:Inter,Arial,sans-serif;background:r
  .catalog-favorites-toggle,.catalog-layout-toggle{font-size:7px;padding:5px 7px}
  .catalog-grid.list-layout .catalog-card-main{grid-template-columns:105px minmax(0,1fr)}
 }
+
+
+/* Just Dance-inspired Dancecard */
+.ui-modal.dancecard-modal{width:min(100%,790px);padding:clamp(18px,3vw,30px)}
+.dancecard-layout{display:grid;gap:12px}
+.dancecard-hero-card{
+  position:relative;isolation:isolate;overflow:hidden;min-height:245px;padding:19px 22px;
+  border:1px solid #ffffff70;border-radius:9px;
+  background:linear-gradient(118deg,#1747a5 0%,#5a27b7 42%,#d92a99 78%,#ff7a60 100%);
+  box-shadow:0 15px 34px #05001955;
+}
+.dancecard-hero-card:before{
+  content:"";position:absolute;z-index:-1;width:320px;height:320px;right:-50px;top:-175px;border-radius:50%;
+  border:2px solid #ffffff78;box-shadow:0 0 0 15px #ffffff18,0 0 0 33px #ffffff12,0 0 0 52px #ffffff0a;
+}
+.dancecard-hero-card:after{
+  content:"";position:absolute;z-index:-1;width:130%;height:40%;bottom:-25%;left:-12%;
+  border:12px solid #ffffff40;border-radius:50%;transform:rotate(-12deg);
+}
+.dancecard-orbit{position:absolute;z-index:-1;border-radius:50%;pointer-events:none}
+.dancecard-orbit.orbit-a{width:68px;height:68px;right:20%;top:23%;border:3px solid #fff4a8;box-shadow:0 0 24px #fff18c66}
+.dancecard-orbit.orbit-b{width:18px;height:18px;right:12%;top:48%;background:#62ffff;box-shadow:0 0 16px #62ffff}
+.dancecard-orbit.orbit-c{width:11px;height:11px;left:46%;top:28%;background:#fff18c;box-shadow:0 0 15px #fff18c}
+.dancecard-card-top,.dancecard-main,.dancecard-card-bottom{position:relative;z-index:1;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.dancecard-brand{display:flex;align-items:baseline;gap:4px;font:italic 900 22px/1 Impact,"Arial Narrow",sans-serif;letter-spacing:-.7px;color:white;text-shadow:0 2px 7px #09002766}
+.dancecard-brand span{font-size:11px;letter-spacing:1.4px;color:#fff18c}
+.dancecard-season{display:inline-flex;gap:6px;align-items:center;padding:7px 10px;border:1px solid #ffffff7c;border-radius:30px;background:#14083c38;font-size:8px;letter-spacing:1px;color:#fff}
+.dancecard-season b{color:#fff18c;font-size:10px}
+.dancecard-main{justify-content:flex-start;margin:28px 0 24px;gap:17px}
+.dancecard-avatar{display:grid;place-items:center;flex:0 0 75px;width:75px;height:75px;border:3px solid #ffffffd9;border-radius:50%;background:linear-gradient(145deg,#fff18c,#ff57b9 54%,#42e9fa);color:#26104a;font-size:24px;font-weight:900;box-shadow:0 5px 22px #09002755}
+.dancecard-player-copy{min-width:0}
+.dancecard-eyebrow{display:block;font-size:8px;font-weight:900;letter-spacing:2.2px;color:#c9ffff;margin-bottom:7px}
+.dancecard-name{margin:0 0 5px!important;font:italic 900 clamp(24px,5vw,42px)/.98 Impact,"Arial Narrow",sans-serif!important;letter-spacing:.1px!important;text-transform:uppercase;text-shadow:0 2px 10px #14042c44}
+.dancecard-email-preview{margin:0!important;color:#f9eaff!important;font-size:10px!important;line-height:1.5!important;overflow-wrap:anywhere}
+.dancecard-card-bottom{align-items:flex-end}
+.dancecard-card-bottom>div{display:grid;gap:4px}
+.dancecard-card-bottom>div>span{font-size:7px;font-weight:900;letter-spacing:1.5px;color:#d5faff}
+.dancecard-player-code{font-size:11px;font-weight:900;letter-spacing:2px;color:white}
+.dancecard-card-star{color:#fff18c;font-size:28px;text-shadow:0 0 14px #fff18c88}
+.dancecard-wallet{display:flex;align-items:center;gap:13px;padding:13px 15px;border:1px solid #ffdc684f;border-radius:7px;background:linear-gradient(105deg,#ffdf4a18,#ff45b80b 65%,#ffffff07)}
+.dancecard-wallet-coin{display:grid;place-items:center;flex:0 0 42px;width:42px;height:42px;border-radius:50%;background:radial-gradient(circle at 30% 25%,#fff6bc,#ffcf48 53%,#d88113);color:#59347e;font-size:25px;font-weight:900;box-shadow:inset 0 0 0 3px #fff7c7aa,0 0 20px #ffd04b20}
+.dancecard-wallet-copy{display:grid;gap:2px;min-width:0}
+.dancecard-wallet-copy>span{font-size:9px;font-weight:900;letter-spacing:1.6px;color:#ffe58a}
+.dancecard-wallet-copy>small{font-size:7px;letter-spacing:.55px;line-height:1.4;color:#bbaed0}
+.dancecard-wallet-copy>strong{font:800 25px/1.05 Inter,Arial,sans-serif;color:#fff;font-variant-numeric:tabular-nums;margin-top:3px}
+.dancecard-wallet-note{margin-left:auto;text-align:right;font-size:8px;line-height:1.6;color:#a99abf}
+.dancecard-social-row{display:grid;grid-template-columns:1.1fr 1fr;gap:10px}
+.dancecard-tag-panel,.dancecard-status-panel{padding:13px;border:1px solid #ffffff21;border-radius:6px;background:#ffffff07;min-width:0}
+.dancecard-section-label{display:block;margin-bottom:9px;font-size:8px;font-weight:900;letter-spacing:1.4px;color:#9e8abb}
+.dancecard-tag-list{display:flex;gap:6px;flex-wrap:wrap}
+.dancecard-tag{display:inline-flex;align-items:center;max-width:100%;padding:5px 8px;border:1px solid #5df4e75c;border-radius:20px;background:#42eee611;color:#a7fbf4;font-size:9px;overflow-wrap:anywhere}
+.dancecard-tag.muted-tag{border-color:#ffffff24;background:#ffffff08;color:#a898bf}
+.dancecard-status-panel strong{display:block;font-size:10px;letter-spacing:.5px;color:#9df9d1;margin-bottom:5px}
+.dancecard-status-panel small{display:block;font-size:9px;line-height:1.5;color:#a998c1}
+.dancecard-account-details{border:1px solid #ffffff25;border-radius:6px;background:#ffffff05;overflow:hidden}
+.dancecard-account-details summary{display:flex;align-items:center;gap:10px;padding:13px;cursor:pointer;list-style:none}
+.dancecard-account-details summary::-webkit-details-marker{display:none}
+.dancecard-account-details summary>span{font-size:10px;font-weight:800;color:#f7f1ff}
+.dancecard-account-details summary>small{margin-left:auto;font-size:8px;color:#a899c2;text-align:right}
+.dancecard-account-details summary>b{font-size:15px;color:#64f4f0;transition:transform .15s}
+.dancecard-account-details[open] summary>b{transform:rotate(45deg)}
+.dancecard-detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:0 13px 13px}
+.dancecard-detail-field{display:grid;gap:6px;min-width:0}
+.dancecard-detail-field.full{grid-column:1/-1}
+.dancecard-detail-field>span{font-size:7px;letter-spacing:1.3px;font-weight:900;color:#a899c2}
+.dancecard-detail-field>code{display:block;padding:9px;border:1px solid #ffffff16;border-radius:4px;background:#0c0620;color:#e0d4f1;font-size:9px;line-height:1.5;overflow-wrap:anywhere;white-space:normal}
+.dancecard-detail-field .dancecard-tag-list{padding-top:1px}
+@media(max-width:600px){
+  .ui-modal.dancecard-modal{padding:23px 14px}
+  .dancecard-hero-card{min-height:225px;padding:15px}
+  .dancecard-main{margin:27px 0 22px;gap:12px}
+  .dancecard-avatar{flex-basis:60px;width:60px;height:60px;font-size:19px}
+  .dancecard-orbit.orbit-a{right:9%;width:51px;height:51px}
+  .dancecard-orbit.orbit-b{right:7%}
+  .dancecard-social-row{grid-template-columns:1fr}
+  .dancecard-account-details summary{flex-wrap:wrap}
+  .dancecard-account-details summary>small{order:3;width:100%;margin-left:0;text-align:left}
+  .dancecard-detail-grid{grid-template-columns:1fr}
+  .dancecard-detail-field.full{grid-column:auto}
+  .dancecard-wallet-note{font-size:7px}
+}
