@@ -430,3 +430,49 @@ body{margin:0;color:var(--white);font-family:Inter,Arial,sans-serif;background:r
   .dancecard-detail-field.full{grid-column:auto}
   .dancecard-wallet-note{font-size:7px}
 }
+
+
+/* Closed-beta access screen: main app stays hidden until account tags are verified */
+.beta-gate[hidden],.game-shell[hidden]{display:none!important}
+.beta-gate{min-height:100vh;display:grid;place-items:center;padding:clamp(16px,4vw,46px);overflow:hidden}
+.beta-gate-panel{
+  position:relative;isolation:isolate;display:flex;flex-direction:column;justify-content:space-between;
+  width:min(100%,1080px);min-height:min(720px,calc(100vh - 32px));padding:clamp(22px,5vw,58px);
+  overflow:hidden;border:1px solid #ffffff29;border-radius:12px;
+  background:radial-gradient(ellipse at 78% 35%,#b42da955,transparent 38%),linear-gradient(120deg,#101f68 0%,#27146d 42%,#581572 75%,#8d216d 100%);
+  box-shadow:0 30px 100px #02001577;
+}
+.beta-gate-panel:after{content:"";position:absolute;inset:0;z-index:-1;opacity:.18;background:repeating-linear-gradient(135deg,transparent 0 40px,#fff 41px,#fff 42px,transparent 43px 82px);mask-image:linear-gradient(90deg,transparent,#000 50%,transparent)}
+.beta-gate-grid{position:absolute;z-index:-1;inset:0 0 0 35%;opacity:.19;background-image:linear-gradient(#ffffff42 1px,transparent 1px),linear-gradient(90deg,#ffffff42 1px,transparent 1px);background-size:34px 34px;transform:perspective(700px) rotateY(-18deg) scale(1.2);mask-image:linear-gradient(90deg,transparent,#000 30%,transparent)}
+.beta-gate-orb{position:absolute;z-index:-1;border-radius:50%;pointer-events:none}
+.beta-gate-orb-one{width:clamp(220px,38vw,430px);height:clamp(220px,38vw,430px);right:5%;top:11%;border:1px solid #ffffff61;box-shadow:0 0 0 19px #ffffff0b,0 0 0 42px #ffffff08,0 0 0 74px #ffffff06}
+.beta-gate-orb-two{width:120px;height:120px;right:23%;top:32%;border:2px solid #fff18c;box-shadow:0 0 40px #ff46bf4f,inset 0 0 34px #ff46bf33}
+.beta-gate-header,.beta-gate-footer{position:relative;z-index:2;display:flex;align-items:center;justify-content:space-between;gap:20px}
+.beta-gate-logo{display:flex;align-items:baseline;gap:6px;font:italic 900 32px/1 Impact,"Arial Narrow",sans-serif;letter-spacing:-1.5px;color:#fff;text-shadow:0 3px 12px #03001b55}
+.beta-gate-logo small{font:800 10px Inter,Arial,sans-serif;letter-spacing:2px;color:#fff18c}
+.beta-gate-label{display:inline-flex;align-items:center;gap:9px;padding:9px 12px;border:1px solid #ffffff35;border-radius:50px;background:#1006294d;color:#eadfff;font-size:8px;font-weight:800;letter-spacing:1.2px}
+.beta-gate-label i{width:4px;height:4px;border-radius:50%;background:#ff5abf;box-shadow:0 0 10px #ff5abf}
+.beta-gate-copy{position:relative;z-index:2;max-width:600px;padding:50px 0}
+.beta-gate-overline{margin:0 0 17px;color:#6cf7f1;font-size:10px;font-weight:900;letter-spacing:2.4px}
+.beta-gate-copy h1{max-width:610px;margin:0 0 17px;font:italic 900 clamp(42px,7vw,76px)/.9 Impact,"Arial Narrow",sans-serif;letter-spacing:-.9px;text-transform:uppercase;color:#fff;text-shadow:0 7px 28px #03001b4f}
+.beta-gate-message{max-width:440px;margin:0 0 26px;color:#e6d8fa;font-size:14px;line-height:1.8}
+.beta-gate-button{display:inline-flex;align-items:center;justify-content:space-between;gap:25px;min-width:245px;min-height:48px;padding:0 17px;border:0;border-radius:4px;background:linear-gradient(90deg,#ff40b8,#ff5b8a);box-shadow:0 10px 30px #ff35b841;color:#230837;font:900 11px Inter,Arial,sans-serif;letter-spacing:.5px;cursor:pointer;transition:filter .18s,transform .18s}
+.beta-gate-button span{font-size:17px}
+.beta-gate-button:hover{filter:brightness(1.1);transform:translateY(-2px)}
+.beta-gate-button:focus-visible{outline:2px solid #62f7ff;outline-offset:4px}
+.beta-gate-status{max-width:490px;margin:17px 0 0;color:#c0addd;font-size:10px;line-height:1.7}
+.beta-gate-status code{padding:2px 5px;border:1px solid #ffffff26;border-radius:3px;background:#1006295e;color:#8ffff5;font:10px ui-monospace,SFMono-Regular,Consolas,monospace}
+.beta-gate-footer{padding-top:17px;border-top:1px solid #ffffff22;color:#ac9bcf;font-size:8px;font-weight:800;letter-spacing:1.5px}
+.beta-gate-footer b{color:#fff18c;padding:0 4px}
+@media(max-width:600px){
+  .beta-gate{padding:10px}
+  .beta-gate-panel{min-height:calc(100vh - 20px);padding:22px 19px;border-radius:8px}
+  .beta-gate-header{align-items:flex-start;flex-direction:column;gap:14px}
+  .beta-gate-label{font-size:7px}
+  .beta-gate-copy{padding:40px 0}
+  .beta-gate-copy h1{font-size:clamp(40px,13vw,58px)}
+  .beta-gate-message{font-size:12px}
+  .beta-gate-orb-one{right:-20%;top:29%}
+  .beta-gate-orb-two{right:12%;top:42%;width:75px;height:75px}
+  .beta-gate-footer{font-size:7px;letter-spacing:.8px}
+}
