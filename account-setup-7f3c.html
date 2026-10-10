@@ -1,0 +1,210 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="robots" content="noindex,nofollow,noarchive">
+  <meta name="referrer" content="strict-origin-when-cross-origin">
+  <meta name="theme-color" content="#170c33">
+  <title>TobiServices · Admin Setup</title>
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    body{min-height:100vh;display:grid;place-items:center;padding:20px}
+    .setup-shell{width:min(100%,620px);position:relative}
+    .setup-brand{font:italic 900 29px Impact,"Arial Narrow",sans-serif;letter-spacing:-.5px;margin-bottom:20px}
+    .setup-brand span{color:#5df5f4}
+    .setup-card{padding:clamp(22px,5vw,38px);background:linear-gradient(145deg,#28144d,#170b30);border:1px solid #ffffff26;border-radius:12px;box-shadow:0 25px 90px #0007}
+    .setup-eyebrow{font-size:9px;color:#5df5f4;letter-spacing:2px;font-weight:800;margin:0 0 9px}
+    h1{font-size:clamp(25px,5vw,35px);line-height:1.05;letter-spacing:-1px;margin:0 0 14px}
+    .setup-intro{font-size:12px;color:#c9badd;line-height:1.75;margin:0 0 22px}
+    .setup-form{display:grid;gap:9px}
+    .setup-form label{font-size:9px;text-transform:uppercase;letter-spacing:1.3px;color:#b5a5d0;font-weight:800;margin-top:5px}
+    .setup-form input{width:100%;min-height:43px;background:#100722;border:1px solid #ffffff35;border-radius:5px;color:#fff;padding:11px 12px;font:12px Inter,Arial,sans-serif;outline:none}
+    .setup-form input:focus{border-color:#62f3f7;box-shadow:0 0 0 3px #5cf3f51c}
+    .setup-warning{margin:17px 0 0;padding:12px;border:1px solid #ffdf7a55;background:#ffdf7a0a;border-radius:5px;color:#ead9b6;font-size:10px;line-height:1.7}
+    .setup-status{min-height:17px;margin:12px 0 0;font-size:11px;line-height:1.6;color:#90f7e6;overflow-wrap:anywhere}
+    .setup-status.error{color:#ff9fcb}
+    .setup-status:empty{display:none}
+    .setup-actions{display:flex;gap:9px;flex-wrap:wrap;margin-top:8px}
+    .setup-footer{font-size:9px;color:#8573a3;text-align:center;line-height:1.7;margin:16px 4px 0}
+    .setup-user{display:flex;align-items:center;gap:11px;margin:12px 0 18px;padding:12px;border:1px solid #ffffff24;border-radius:6px;background:#ffffff08}
+    .setup-avatar{width:40px;height:40px;display:grid;place-items:center;border-radius:50%;background:linear-gradient(130deg,#ff48b8,#5df5f4);color:#1b0b33;font-weight:900}
+    .setup-user strong,.setup-user small{display:block;overflow-wrap:anywhere}.setup-user strong{font-size:12px}.setup-user small{font-size:10px;color:#b7a4d0;margin-top:4px}
+    .setup-card[aria-busy="true"]{opacity:.82}
+    @media(max-width:480px){body{padding:12px}.setup-card{padding:22px 17px}.setup-actions{display:grid}.setup-actions .ui-button{width:100%}}
+  </style>
+</head>
+<body>
+  <main class="setup-shell">
+    <div class="setup-brand">TOBI<span>SERVICES</span> / SETUP</div>
+    <section class="setup-card" id="setupCard" aria-live="polite">
+      <p class="setup-eyebrow">RESTRICTED SETUP · NOT LINKED IN MENU</p>
+      <h1>Account-Bereich wird geprüft …</h1>
+      <p class="setup-intro">Das Setup verwendet den bestehenden TobiServices-Accountdienst. Privilegien werden serverseitig geprüft.</p>
+    </section>
+    <p class="setup-footer">Diese Seite ist nicht in der Navigation verlinkt und bittet Suchmaschinen, sie nicht zu indexieren. Das ist keine Zugriffskontrolle: Der Schutz kommt vom TobiServices-Backend und dem geheimen Bootstrap-Schlüssel.</p>
+  </main>
+
+  <script type="module">
+    import { onUser, isAdmin, bootstrapAdmin, createAccount, setTags, signOut, CONFIG } from "https://hannonuppi.github.io/Tobiservices-Account/auth-core.js";
+
+    const card = document.getElementById("setupCard");
+    let currentUser = null;
+    let currentProfile = null;
+    let submitting = false;
+
+    function escapeText(value) {
+      return String(value ?? "").replace(/[&<>"']/g, function(character) {
+        return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[character];
+      });
+    }
+
+    function setStatus(message, isError) {
+      const status = document.getElementById("setupStatus");
+      if (!status) return;
+      status.textContent = message;
+      status.className = "setup-status" + (isError ? " error" : "");
+    }
+
+    function renderBootstrapForm(message) {
+      card.setAttribute("aria-busy", "false");
+      card.innerHTML =
+        '<p class="setup-eyebrow">FIRST ADMIN BOOTSTRAP</p>' +
+        '<h1>Ersten Admin erstellen</h1>' +
+        '<p class="setup-intro">Hiermit wird der erste TobiServices-Administrator eingerichtet. Das Backend akzeptiert diesen Vorgang nur, solange noch kein Admin-Account existiert. Der Bootstrap-Schlüssel wird nur für diese Anfrage verwendet und nicht gespeichert.</p>' +
+        (currentUser ? '<div class="setup-warning">Du bist momentan mit einem normalen Account angemeldet. Das allein verleiht keine Rechte. Das Backend prüft den Bootstrap-Vorgang unabhängig davon.</div>' : '') +
+        '<form id="bootstrapForm" class="setup-form">' +
+          '<label for="bootstrapUsername">Admin-Benutzername</label>' +
+          '<input id="bootstrapUsername" name="username" minlength="3" maxlength="32" pattern="[A-Za-z0-9._-]{3,32}" autocomplete="username" required placeholder="z. B. tobi-admin">' +
+          '<label for="bootstrapDisplayName">Anzeigename</label>' +
+          '<input id="bootstrapDisplayName" name="displayName" maxlength="40" autocomplete="name" placeholder="TobiServices Admin">' +
+          '<label for="bootstrapPassword">Passwort (mindestens 8 Zeichen)</label>' +
+          '<input id="bootstrapPassword" name="password" type="password" minlength="8" maxlength="128" autocomplete="new-password" required>' +
+          '<label for="bootstrapKey">Geheimer Bootstrap-Schlüssel</label>' +
+          '<input id="bootstrapKey" name="bootstrapKey" type="password" autocomplete="off" required>' +
+          '<p class="setup-status" id="setupStatus">' + escapeText(message || '') + '</p>' +
+          '<div class="setup-actions"><button type="submit" class="ui-button primary" id="bootstrapSubmit">Ersten Admin anlegen</button></div>' +
+        '</form>' +
+        '<div class="setup-warning"><strong>Nur einmal nutzbar:</strong> Falls bereits ein Admin existiert, muss ein weiterer Admin durch einen angemeldeten Admin im regulären Account-System erstellt werden. Der Schlüssel wird nicht in diesem Repository hinterlegt.</div>';
+
+      document.getElementById("bootstrapForm").addEventListener("submit", async function(event) {
+        event.preventDefault();
+        if (submitting) return;
+        submitting = true;
+        card.setAttribute("aria-busy", "true");
+        const button = document.getElementById("bootstrapSubmit");
+        button.disabled = true;
+        setStatus("Der Server prüft den Schlüssel und den Admin-Status …", false);
+        const username = document.getElementById("bootstrapUsername").value.trim();
+        const displayName = document.getElementById("bootstrapDisplayName").value.trim();
+        const password = document.getElementById("bootstrapPassword").value;
+        const key = document.getElementById("bootstrapKey").value;
+        try {
+          await bootstrapAdmin(username, password, key, displayName);
+          document.getElementById("bootstrapPassword").value = "";
+          document.getElementById("bootstrapKey").value = "";
+          submitting = false;
+          renderAdminCreator("Der erste Admin wurde vom TobiServices-Backend erstellt und angemeldet.");
+        } catch (error) {
+          console.error("Admin-Bootstrap fehlgeschlagen:", error);
+          let message = "Erstellung fehlgeschlagen. Bitte Verbindung prüfen und erneut versuchen.";
+          const code = String(error?.code || "");
+          if (code.includes("permission-denied")) message = "Bootstrap abgelehnt. Prüfe den Schlüssel; möglicherweise existiert bereits ein Admin.";
+          else if (code.includes("already-exists")) message = "Dieser Benutzername ist bereits vergeben oder der erste Admin existiert bereits.";
+          else if (code.includes("invalid-argument")) message = error?.message || "Benutzername oder Passwort erfüllt die Regeln nicht.";
+          else if (code.includes("unavailable") || code.includes("failed-precondition")) message = "Der Accountdienst ist nicht bereit. Bitte später erneut versuchen.";
+          setStatus(message, true);
+          button.disabled = false;
+        } finally {
+          submitting = false;
+          card.setAttribute("aria-busy", "false");
+        }
+      });
+    }
+
+    function renderAdminCreator(message) {
+      card.setAttribute("aria-busy", "false");
+      const display = currentProfile?.displayName || currentProfile?.username || currentUser?.displayName || "TobiServices Admin";
+      const username = currentProfile?.username || "";
+      card.innerHTML =
+        '<p class="setup-eyebrow">AUTHORIZED ADMIN SESSION</p>' +
+        '<h1>Admin-Account anlegen</h1>' +
+        '<p class="setup-intro">Du bist als TobiServices-Admin angemeldet. Das Backend prüft deine Admin-Rolle erneut, bevor es ein Konto erstellt oder den Admin-Tag vergibt.</p>' +
+        '<div class="setup-user"><span class="setup-avatar">' + escapeText(String(display).slice(0,2).toUpperCase()) + '</span><div><strong>' + escapeText(display) + '</strong><small>@' + escapeText(username) + ' · Admin</small></div></div>' +
+        '<form id="createAdminForm" class="setup-form">' +
+          '<label for="newAdminUsername">Neuer Benutzername</label>' +
+          '<input id="newAdminUsername" minlength="3" maxlength="32" pattern="[A-Za-z0-9._-]{3,32}" autocomplete="off" required placeholder="Neuer Username">' +
+          '<label for="newAdminDisplayName">Anzeigename</label>' +
+          '<input id="newAdminDisplayName" maxlength="40" autocomplete="off" placeholder="Name">' +
+          '<label for="newAdminPassword">Startpasswort (mindestens 8 Zeichen)</label>' +
+          '<input id="newAdminPassword" type="password" minlength="8" maxlength="128" autocomplete="new-password" required>' +
+          '<p class="setup-status" id="setupStatus">' + escapeText(message || '') + '</p>' +
+          '<div class="setup-actions"><button type="submit" class="ui-button primary" id="createAdminSubmit">Admin-Account erstellen</button><button type="button" class="ui-button secondary" id="openAccountCenter">Account Center öffnen</button><button type="button" class="ui-button ghost" id="logoutSetup">Abmelden</button></div>' +
+        '</form>' +
+        '<div class="setup-warning">Das Konto wird über die vorhandenen geschützten Funktionen erstellt und anschließend mit dem Tag <code>admin</code> versehen. Falls die zweite Serveraktion fehlschlägt, ist das normale Konto bereits angelegt; du kannst den Tag dann im Account Center ergänzen.</div>';
+
+      document.getElementById("createAdminForm").addEventListener("submit", async function(event) {
+        event.preventDefault();
+        if (submitting || !currentUser || !isAdmin(currentProfile)) {
+          setStatus("Keine gültige Admin-Sitzung. Bitte erneut anmelden.", true);
+          return;
+        }
+        submitting = true;
+        card.setAttribute("aria-busy", "true");
+        const button = document.getElementById("createAdminSubmit");
+        button.disabled = true;
+        setStatus("Account wird erstellt und mit dem Admin-Tag versehen …", false);
+        const newUsername = document.getElementById("newAdminUsername").value.trim();
+        const newDisplayName = document.getElementById("newAdminDisplayName").value.trim();
+        const newPassword = document.getElementById("newAdminPassword").value;
+        try {
+          const created = await createAccount(newUsername, newPassword, newDisplayName);
+          try {
+            await setTags(created.uid, ["admin"]);
+            submitting = false;
+            renderAdminCreator("Admin-Account @" + created.username + " erfolgreich erstellt.");
+          } catch (tagError) {
+            console.error("Account wurde angelegt, aber der Admin-Tag konnte nicht gesetzt werden:", tagError);
+            submitting = false;
+            renderAdminCreator("Account @" + created.username + " wurde erstellt, aber der Admin-Tag konnte nicht gesetzt werden. Öffne das Account Center und ergänze den Tag manuell.");
+          }
+        } catch (error) {
+          console.error("Admin-Account konnte nicht erstellt werden:", error);
+          const code = String(error?.code || "");
+          let msg = "Account-Erstellung fehlgeschlagen. Bitte versuche es erneut.";
+          if (code.includes("already-exists")) msg = "Dieser Benutzername ist bereits vergeben.";
+          else if (code.includes("permission-denied") || code.includes("unauthenticated")) msg = "Deine Admin-Sitzung ist nicht mehr gültig oder besitzt keine Rechte.";
+          else if (code.includes("invalid-argument")) msg = error?.message || "Benutzername oder Passwort ist ungültig.";
+          setStatus(msg, true);
+          button.disabled = false;
+        } finally {
+          submitting = false;
+          card.setAttribute("aria-busy", "false");
+        }
+      });
+
+      document.getElementById("openAccountCenter").addEventListener("click", function() {
+        window.location.href = CONFIG.accountUrl;
+      });
+      document.getElementById("logoutSetup").addEventListener("click", async function() {
+        try {
+          await signOut();
+          currentUser = null;
+          currentProfile = null;
+          renderBootstrapForm("Abgemeldet. Der Server wird weiterhin alle Bootstrap-Berechtigungen prüfen.");
+        } catch (error) {
+          console.error(error);
+          setStatus("Abmelden fehlgeschlagen. Bitte erneut versuchen.", true);
+        }
+      });
+    }
+
+    onUser(function(user, profile) {
+      currentUser = user;
+      currentProfile = profile;
+      if (user && isAdmin(profile)) renderAdminCreator();
+      else renderBootstrapForm();
+    });
+  </script>
+</body>
+</html>
