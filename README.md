@@ -12,6 +12,12 @@ Ein eigenständiger, responsiver Web-UI-Prototyp, der sich am allgemeinen Aufbau
 - Song-Detailansicht und Demo-Player mit 30-Sekunden-Timer. **Keine echte Musik, Tanzanimation oder Wertung**
 - Einstellungen für reduzierte Bewegung und höheren Kontrast werden lokal im Browser gespeichert
 
+## Closed-Beta-Zugang
+
+Die Startseite zeigt zunächst nur den geschlossenen Beta-Zugang. Das JDNEXT-Menü wird im Browser erst nach einer erfolgreichen TobiServices-Anmeldung und einem Profil mit dem Tag `dance-beta` oder `admin` eingeblendet. `admin` hat dabei Vorrang und erhält ebenfalls Zugriff.
+
+Die Zugangssperre auf GitHub Pages ist eine UI-Sperre, keine sichere Auslieferungsgrenze für statische HTML-/JavaScript-Dateien. Für echte geschützte Inhalte müssen Daten und Aktionen zusätzlich serverseitig geprüft werden. Die vorhandenen TobiServices-Admin-Cloud-Functions prüfen Admin-Rechte bereits serverseitig.
+
 ## Firebase-Accounts und Tags
 
 JDNEXT UI verwendet das gemeinsame Client-Modul aus [Tobiservices-Account](https://github.com/HannoNuppi/Tobiservices-Account) und meldet Nutzer über **Firebase Authentication (E-Mail + Passwort)** an. Beim ersten Login erzeugt die geschützte Cloud Function `ensureUserProfile` ein Profil für die UID, falls es noch fehlt. Dieses Profil bekommt anfangs immer `tags: []`.
