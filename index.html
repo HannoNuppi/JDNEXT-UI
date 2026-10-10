@@ -9,7 +9,26 @@
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-  <div class="game-shell">
+  <section class="beta-gate" id="betaGate" aria-labelledby="betaGateTitle">
+    <div class="beta-gate-panel">
+      <div class="beta-gate-grid" aria-hidden="true"></div>
+      <div class="beta-gate-orb beta-gate-orb-one" aria-hidden="true"></div>
+      <div class="beta-gate-orb beta-gate-orb-two" aria-hidden="true"></div>
+      <header class="beta-gate-header">
+        <div class="beta-gate-logo"><span>JD</span><small>NEXT</small></div>
+        <span class="beta-gate-label">PRIVATE ACCESS <i></i> CLOSED BETA</span>
+      </header>
+      <main class="beta-gate-copy">
+        <p class="beta-gate-overline">TOBISERVICES × JDNEXT</p>
+        <h1 id="betaGateTitle">Dein nächster Dancefloor wartet.</h1>
+        <p id="betaGateMessage" class="beta-gate-message">Melde dich mit deinem TobiServices-Konto an, um die geschlossene Beta zu öffnen.</p>
+        <button class="beta-gate-button" id="betaLogin" type="button">Mit TobiServices anmelden <span aria-hidden="true">↗</span></button>
+        <p class="beta-gate-status" id="betaGateStatus" role="status" aria-live="polite">Zugriff erhalten Konten mit dem Tag <code>dance-beta</code> oder <code>admin</code>.</p>
+      </main>
+      <footer class="beta-gate-footer"><span>ACCESS CONTROLLED</span><span>JD NEXT <b>•</b> CLOSED BETA</span></footer>
+    </div>
+  </section>
+  <div class="game-shell" id="gameShell" hidden>
     <aside class="sidebar" aria-label="Navigation">
       <div class="brand-mark" aria-label="JD NEXT">
         <span class="brand-jd">JD</span><span class="brand-next">NEXT</span>
