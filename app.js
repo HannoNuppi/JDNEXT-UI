@@ -431,7 +431,7 @@ function showMoreContent() {
   openScreen("content");
 }
 
-$(".nav-icon").forEach(icon => {
+$$(".nav-icon").forEach(icon => {
   icon.setAttribute("role", "button");
   icon.tabIndex = 0;
   icon.addEventListener("keydown", event => {
