@@ -5,11 +5,21 @@ const FALLBACK_LOGIN_URL = "https://hannonuppi.github.io/Tobiservices-Account/lo
 const FALLBACK_ACCOUNT_URL = "https://hannonuppi.github.io/Tobiservices-Account/account.html";
 
 function openScreen(screen, parameters = {}) {
-  const url = new URL("./screens/" + screen + ".html", window.location.href);
+  // Resolve from app.js itself, not from the current browser URL. This also
+  // works when GitHub Pages is opened without the trailing slash.
+  const allowedScreens = new Set([
+    "dancecard", "catalog", "song", "player", "settings",
+    "notifications", "content", "playlists", "login"
+  ]);
+  if (!allowedScreens.has(screen)) {
+    console.error("Unknown JDNEXT screen:", screen);
+    return;
+  }
+  const url = new URL("./screens/" + screen + ".html", import.meta.url);
   Object.entries(parameters).forEach(([key, value]) => {
     if (value !== undefined && value !== null && value !== "") url.searchParams.set(key, String(value));
   });
-  window.location.href = url.href;
+  window.location.assign(url.href);
 }
 
 let accountApi = null;
