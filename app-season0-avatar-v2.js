@@ -43,6 +43,9 @@ function openScreen(screen, parameters = {}) {
 let accountApi = null;
 let accountUser = null;
 let accountProfile = null;
+let accessControl = null;
+let accessControlLoadError = null;
+let accessControlReady = false;
 let maintenanceState = { enabled: false, message: "", loaded: false, error: null };
 let accountLoadError = null;
 let toastTimer = null;
@@ -170,9 +173,9 @@ function updateBetaGate() {
   const gate = $("#betaGate");
   const shell = $("#gameShell");
   const isAdmin = Boolean(accountApi?.isAdmin?.(accountProfile));
-  const hasBetaTag = Boolean(accountApi?.hasTag?.(accountProfile, "dance-beta"));
   const serviceDisabled = accountProfile?.disabled === true;
-  const hasBetaAccess = Boolean(accountUser && accountProfile && !serviceDisabled && (isAdmin || hasBetaTag));
+  const hasBetaAccess = Boolean(accountUser && accountProfile && !serviceDisabled &&
+    accessControlReady && accountApi?.hasAccess?.(accountProfile, "jdnext", accessControl));
   const bypassActive = isAdmin && accountProfile?.maintenanceBypass === true;
   const maintenanceReady = maintenanceState.loaded && !maintenanceState.error;
   const maintenanceBlocks = Boolean(accountUser && accountProfile &&
@@ -201,7 +204,7 @@ function updateBetaGate() {
   if (!accountUser) {
     if (title) title.textContent = "Dein nächster Dancefloor wartet.";
     if (message) message.textContent = "Melde dich mit deinem TobiServices-Konto an, um die geschlossene Beta zu öffnen.";
-    if (status) status.innerHTML = 'Zugriff erhalten Konten mit dem Tag <code>dance-beta</code> oder <code>admin</code>.';
+    if (status) status.textContent = "Zugriff wird anhand der zentralen TobiServices-Berechtigungen geprüft.";
     if (button) button.textContent = "Mit TobiServices anmelden ↗";
   } else if (!accountProfile) {
     if (title) title.textContent = "Dein Zugang wird geprüft.";
@@ -211,9 +214,14 @@ function updateBetaGate() {
   } else if (serviceDisabled) {
     if (title) title.textContent = "Der Dienstzugriff ist pausiert.";
     if (message) message.textContent = "Für dieses Konto wurde der Zugriff auf TobiServices-Dienste gesperrt. Bitte wende dich an einen Admin.";
-    if (status) status.textContent = "Der Zugang bleibt gesperrt, auch wenn dein Konto den Beta-Tag besitzt.";
+    if (status) status.textContent = "Der Dienstzugriff bleibt gesperrt, auch wenn ein Tag vorhanden ist.";
     if (button) button.textContent = "Konto wechseln ↗";
-  } else if ((isAdmin || hasBetaTag) && (!maintenanceState.loaded || maintenanceState.error)) {
+  } else if (accessControlLoadError || !accessControlReady) {
+    if (title) title.textContent = "Berechtigungen werden geprüft.";
+    if (message) message.textContent = "Die zentrale TobiServices-Berechtigungsmatrix ist gerade nicht erreichbar. JDNEXT bleibt geschlossen, bis dein Zugriff überprüft werden kann.";
+    if (status) status.textContent = "Prüfe die Verbindung und lade die Seite neu.";
+    if (button) button.textContent = "Konto wechseln ↗";
+  } else if (hasBetaAccess && (!maintenanceState.loaded || maintenanceState.error)) {
     if (title) title.textContent = "Wartungsstatus wird geprüft.";
     if (message) message.textContent = maintenanceState.error
       ? "Der Wartungsstatus konnte nicht sicher gelesen werden. Bitte lade die Seite neu."
@@ -239,6 +247,15 @@ function updateBetaGate() {
 async function initializeAccounts() {
   try {
     accountApi = await import(ACCOUNT_MODULE_URL);
+    try {
+      accessControl = await accountApi.getAccessControl();
+      accessControlReady = true;
+      accessControlLoadError = null;
+    } catch (error) {
+      accessControlLoadError = error;
+      accessControlReady = false;
+      console.error("Zentrale JDNEXT-Berechtigungen konnten nicht geladen werden:", error);
+    }
     if (typeof accountApi.onMaintenanceMode === "function") {
       accountApi.onMaintenanceMode((settings, error) => {
         maintenanceState = error
