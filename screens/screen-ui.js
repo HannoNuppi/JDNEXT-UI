@@ -125,8 +125,12 @@ function checkScreenAccess() {
     go(HOME_URL);
     return;
   }
+  if (maintenance.error) {
+    go(HOME_URL);
+    return;
+  }
   if (!maintenance.loaded) return;
-  if (maintenance.error || (maintenance.enabled && !(isAdmin(currentProfile) && currentProfile.maintenanceBypass === true))) {
+  if (maintenance.enabled && !(isAdmin(currentProfile) && currentProfile.maintenanceBypass === true)) {
     go(HOME_URL);
     return;
   }
@@ -375,7 +379,7 @@ function renderContent(){
     '<div class="screen-grid-three" style="margin-top:16px"><article class="season-card" style="--panel-a:#203e91;--panel-b:#401e76"><small>COLLECTION 01</small><strong>SONG LIBRARY</strong><p>Entdecke Songs aus dem Konzept-Katalog von Just Dance 2024 und 2025.</p><button class="screen-btn secondary" data-hub="catalog">ÖFFNEN →</button></article><article class="season-card" style="--panel-a:#8c235c;--panel-b:#36104e"><small>MADE FOR YOUR MOOD</small><strong>PLAYLISTS</strong><p>Stilisierte Featured-Playlist-Karten mit eigenen Farbwelten.</p><button class="screen-btn secondary" data-hub="playlists">ÖFFNEN →</button></article><article class="season-card" style="--panel-a:#126c79;--panel-b:#322063"><small>PLAYER HUB</small><strong>DANCECARD</strong><p>Dein Kontostand, dein Zugang und deine TobiServices-Tags.</p><button class="screen-btn secondary" data-hub="dancecard">ÖFFNEN →</button></article></div>';
   $("#hubBrowseSongs").addEventListener("click",()=>go("./catalog.html"));
   $("#hubPlaylists").addEventListener("click",()=>go("./playlists.html"));
-  $("#screenContent").addEventListener("click",event=>{const btn=event.target.closest("[data-hub]");if(btn)go("./"+btn.dataset.hub+".html");},{once:true});
+  $("#screenContent").addEventListener("click",event=>{const btn=event.target.closest("[data-hub]");if(btn)go("./"+btn.dataset.hub+".html");});
 }
 function renderPlaylists(){
   updateScreenHeader("LIBRARY · CURATED MOODS","PLAYLISTS",currentUser);
@@ -423,8 +427,10 @@ function renderLogin(){
   });
 }
 function renderScreen(){
-  document.documentElement.classList.toggle("reduce-motion",localStorage.getItem("jdnext-reduce-motion")==="true");
-  document.documentElement.classList.toggle("high-contrast",localStorage.getItem("jdnext-high-contrast")==="true");
+  try {
+    document.documentElement.classList.toggle("reduce-motion",localStorage.getItem("jdnext-reduce-motion")==="true");
+    document.documentElement.classList.toggle("high-contrast",localStorage.getItem("jdnext-high-contrast")==="true");
+  } catch {}
   switch(screenName){
     case "dancecard":renderDancecard();break;
     case "catalog":renderCatalog();break;
@@ -439,3 +445,11 @@ function renderScreen(){
 }
 if(screenName==="login")renderLogin();
 else initializeAccessGuard();
+
+document.addEventListener("keydown", event => {
+  if (event.key === "Escape" && screenName !== "login") {
+    event.preventDefault();
+    if (screenName === "song" || screenName === "player") go("./catalog.html");
+    else go(HOME_URL);
+  }
+});
