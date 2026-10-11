@@ -4,7 +4,8 @@ Ein eigenständiger, responsiver Web-UI-Prototyp, der sich am allgemeinen Aufbau
 
 ## Interaktionen
 
-- Navigation zu Home, Songs, Playlists, Suche, Profil, weiteren Inhalten und Einstellungen
+- Navigation zu Home, Songs, Playlists, Suche, Dancecard, weiteren Inhalten und Einstellungen
+- Vollbild-Unterseiten in `screens/` für Dancecard, Katalog, Songdetails, Demo-Player, Settings, Benachrichtigungen, Season Hub, Playlists und Login
 - Katalogsuche mit Textsuche, Edition-, Genre- und Schwierigkeitsfiltern
 - Sortierung nach Edition, Songtitel, Artist oder Demo-Schwierigkeit
 - Raster- und Listenansicht
@@ -44,9 +45,11 @@ Damit E-Mail-Konten und Tag-Rollen funktionieren, öffne Firebase Console → Fi
 
 ## Dateien
 
-- `index.html` — Menüstruktur
-- `styles.css` — Layout, responsives Design und Dialog-/Katalogstile
-- `app.js` — UI-Interaktionen, Song-Katalog und Firebase-E-Mail-Anmeldung
+- `index.html` — Hauptmenü und Closed-Beta-Gate
+- `styles.css` — Hauptmenü-Stil, responsive Komponenten und Beta-Zugang
+- `app.js` — Hauptmenü-Navigation und Übergänge zu den Vollbild-Unterseiten
+- `screens/*.html` — eigenständige Vollbild-Menüseiten
+- `screens/screen-ui.css` und `screens/screen-ui.js` — gemeinsames Screen-Design, Navigation, Katalog und Zugriffsschutz
 - `account-setup-7f3c.html` — nicht verlinkte Admin-Tag-Verwaltung mit Anmeldung
 - `.nojekyll` — Vorbereitung für GitHub Pages
 
