@@ -5,6 +5,8 @@ import {
   onUser,
   isAdmin,
   hasTag,
+  getAccessControl,
+  hasAccess,
   onMaintenanceMode,
   setMaintenanceBypass,
   safeReturnUrl
@@ -66,6 +68,8 @@ try { favorites = new Set(JSON.parse(localStorage.getItem(FAVORITES_KEY) || "[]"
 let currentUser = null;
 let currentProfile = null;
 let maintenance = {enabled:false,message:"",loaded:false,error:null};
+let accessControl = null;
+let accessControlReady = false;
 let authReady = false;
 let screenStarted = false;
 let toastTimer = null;
@@ -128,12 +132,11 @@ function updateScreenHeader(kicker, title, user) {
   }
 }
 function currentHasAccess() {
-  const roleAllowed = isAdmin(currentProfile) || hasTag(currentProfile,"dance-beta");
-  return Boolean(currentUser && currentProfile && currentProfile.disabled !== true && roleAllowed);
+  return Boolean(currentUser && hasAccess(currentProfile,"jdnext",accessControl));
 }
 function checkScreenAccess() {
   if (screenName === "login") return;
-  if (!authReady) return;
+  if (!authReady || !accessControlReady) return;
   if (!currentUser || !currentProfile) {
     go(HOME_URL);
     return;
@@ -161,10 +164,17 @@ function checkScreenAccess() {
   }
 }
 function initializeAccessGuard() {
-  onUser((user, profile) => {
+  onUser(async (user, profile) => {
     currentUser = user;
     currentProfile = profile;
     authReady = true;
+    try {
+      accessControl = await getAccessControl();
+    } catch (error) {
+      console.warn("Zentrale Berechtigungen konnten nicht geladen werden; verwende sichere Standardregeln.",error);
+      accessControl = null;
+    }
+    accessControlReady = true;
     checkScreenAccess();
   });
   onMaintenanceMode((state,error) => {
@@ -445,8 +455,10 @@ function renderLogin(){
     try{
       const result=await login($("#screenEmail").value.trim(),$("#screenPassword").value);
       const profile=result.profile;
-      if(!profile||profile.disabled===true||!(isAdmin(profile)||hasTag(profile,"dance-beta"))){
-        message.classList.add("error");message.textContent="Anmeldung war erfolgreich, aber dieses Konto ist noch nicht für die Closed Beta freigeschaltet.";
+      let access=null;
+      try { access=await getAccessControl(); } catch(error) { console.warn("Zentrale Berechtigungen nicht verfügbar",error); }
+      if(!profile||profile.disabled===true||!hasAccess(profile,"jdnext",access)){
+        message.classList.add("error");message.textContent="Anmeldung war erfolgreich, aber dieses Konto ist noch nicht für JDNEXT freigeschaltet.";
         submit.disabled=false;return;
       }
       const requested=new URLSearchParams(location.search).get("return");
