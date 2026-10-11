@@ -214,3 +214,30 @@ body.screen-ready .screen-shell{visibility:visible}
  .song-screen-grid.list-layout .song-screen-info{padding:10px 36px 10px 11px}
  .song-screen-grid.list-layout .song-screen-title{font-size:11px}
 }
+
+
+/* Interactive player avatar picker for Season 0 */
+.player-id-season{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.player-id-season small{display:block;width:100%;text-align:right;color:#a8fff8;font-size:7px;font-weight:900;letter-spacing:1.2px;margin-top:2px}
+.player-avatar-stage{background:linear-gradient(145deg,#131b4c,#361052);--avatar-a:#b34aff;--avatar-b:#32dff9}
+.player-avatar-stage:before{background:radial-gradient(circle, color-mix(in srgb,var(--avatar-a) 35%,transparent),transparent 68%);border-color:#ffffff78}
+.player-avatar-initial.avatar-character{width:116px;height:116px;display:grid;place-items:center;border:3px solid #ffffffdc;border-radius:50%;background:linear-gradient(140deg,var(--avatar-a),var(--avatar-b));font-size:57px;line-height:1;text-shadow:0 5px 15px #17082d72;box-shadow:0 9px 28px #09002766,0 0 35px color-mix(in srgb,var(--avatar-b) 40%,transparent);overflow:hidden}
+.avatar-picker-panel{display:grid;gap:0}
+.avatar-picker-copy{margin:-6px 0 13px;color:var(--screen-muted);font-size:9px;line-height:1.65}
+.avatar-preset-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.avatar-preset{display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:5px;min-width:0;padding:9px 5px 8px;border:1px solid #ffffff20;background:#ffffff05;color:#fff;cursor:pointer;transition:transform .15s,border-color .15s,background .15s}
+.avatar-preset:hover{transform:translateY(-2px);border-color:#ffffff60;background:#ffffff0c}
+.avatar-preset[aria-pressed=true]{border-color:#64f5ee;background:#64f5ee12;box-shadow:0 0 17px #64f5ee18,inset 0 0 0 1px #64f5ee44}
+.avatar-preset-art{display:grid;place-items:center;width:48px;height:48px;border:2px solid #ffffffb8;border-radius:50%;background:linear-gradient(145deg,var(--avatar-a),var(--avatar-b));font-size:25px;line-height:1;box-shadow:0 5px 14px #0004}
+.avatar-preset strong{max-width:100%;overflow-wrap:anywhere;text-align:center;font-size:8px;line-height:1.25}
+.avatar-preset small{color:#9d8db8;font-size:6px;letter-spacing:.7px;text-align:center;line-height:1.3}
+.avatar-preset-note,.avatar-picker-note{margin:11px 0 0;color:#817197;font-size:8px;line-height:1.6}
+.avatar-preset:focus-visible{outline:2px solid var(--screen-cyan);outline-offset:2px}
+@media(max-width:430px){
+ .avatar-preset-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .avatar-preset{flex-direction:row;justify-content:flex-start;text-align:left;padding:8px;gap:8px}
+ .avatar-preset-art{width:40px;height:40px;flex:0 0 40px;font-size:21px}
+ .avatar-preset strong{text-align:left;font-size:8px}
+ .avatar-preset small{display:none}
+ .player-avatar-initial.avatar-character{width:84px;height:84px;font-size:43px}
+}
