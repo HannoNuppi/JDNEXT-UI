@@ -4,6 +4,14 @@ const ACCOUNT_MODULE_URL = "https://hannonuppi.github.io/Tobiservices-Account/au
 const FALLBACK_LOGIN_URL = "https://hannonuppi.github.io/Tobiservices-Account/login.html";
 const FALLBACK_ACCOUNT_URL = "https://hannonuppi.github.io/Tobiservices-Account/account.html";
 
+function openScreen(screen, parameters = {}) {
+  const url = new URL("./screens/" + screen + ".html", window.location.href);
+  Object.entries(parameters).forEach(([key, value]) => {
+    if (value !== undefined && value !== null && value !== "") url.searchParams.set(key, String(value));
+  });
+  window.location.href = url.href;
+}
+
 let accountApi = null;
 let accountUser = null;
 let accountProfile = null;
@@ -312,152 +320,15 @@ async function setCurrentMaintenanceBypass(enabled, control = null) {
 }
 
 function showProfile() {
-  if (!accountUser) {
-    openLoginModal();
-    return;
-  }
-
-  const display = accountProfile?.displayName || accountUser.displayName || accountUser.email || "Dance Player";
-  const email = accountProfile?.email || accountUser.email || "(nicht verfügbar)";
-  const tags = Array.isArray(accountProfile?.tags) ? accountProfile.tags : [];
-  const goldCoins = Number.isSafeInteger(accountProfile?.goldCoins) && accountProfile.goldCoins >= 0
-    ? accountProfile.goldCoins
-    : 0;
-
-  openModal("Dancecard",
-    '<div class="dancecard-layout">' +
-      '<section class="dancecard-hero-card" aria-label="Deine Dancecard">' +
-        '<div class="dancecard-orbit orbit-a"></div><div class="dancecard-orbit orbit-b"></div><div class="dancecard-orbit orbit-c"></div>' +
-        '<div class="dancecard-card-top"><div class="dancecard-brand">JD<span>NEXT</span></div><span class="dancecard-season">SEASON <b>01</b></span></div>' +
-        '<div class="dancecard-main"><div class="dancecard-avatar"></div><div class="dancecard-player-copy">' +
-          '<span class="dancecard-eyebrow">YOUR DANCECARD</span><h3 class="dancecard-name"></h3><p class="dancecard-email-preview"></p>' +
-        '</div></div>' +
-        '<div class="dancecard-card-bottom"><div><span>PLAYER CODE</span><code class="dancecard-player-code"></code></div><span class="dancecard-card-star" aria-hidden="true">✦</span></div>' +
-      '</section>' +
-      '<section class="dancecard-wallet" aria-label="Goldmünzen-Guthaben">' +
-        '<div class="dancecard-wallet-coin" aria-hidden="true">✦</div><div class="dancecard-wallet-copy">' +
-          '<span>GOLDMÜNZEN</span><small>GEMEINSAMES TOBISERVICES-GUTHABEN</small><strong class="dancecard-gold-coins">0</strong>' +
-        '</div><div class="dancecard-wallet-note">Verdienen ist<br>noch nicht verfügbar</div>' +
-      '</section>' +
-      '<section class="dancecard-social-row">' +
-        '<div class="dancecard-tag-panel"><span class="dancecard-section-label">YOUR TAGS</span><div class="dancecard-tag-list" id="dancecardTagPreview"></div></div>' +
-        '<div class="dancecard-status-panel"><span class="dancecard-section-label">ACCOUNT STATUS</span><strong>READY TO DANCE</strong><small>Dein TobiServices-Konto ist verbunden.</small></div>' +
-      '</section>' +
-      (accountApi.isAdmin(accountProfile)
-        ? '<section class="dancecard-status-panel dancecard-maintenance-panel"><span class="dancecard-section-label">ADMIN CONTROL</span><strong id="dancecardBypassState"></strong><small id="dancecardBypassDescription"></small><button class="ui-button secondary" id="toggleMaintenanceBypass" type="button">Wartungsbypass aktivieren</button></section>'
-        : '') +
-      '<details class="dancecard-account-details">' +
-        '<summary><span>Kontoinformationen</span><small>E-Mail, Tags und vollständige Account-ID</small><b aria-hidden="true">＋</b></summary>' +
-        '<div class="dancecard-detail-grid">' +
-          '<div class="dancecard-detail-field"><span>E-MAIL-ADRESSE</span><code class="dancecard-email"></code></div>' +
-          '<div class="dancecard-detail-field"><span>VOLLSTÄNDIGE ACCOUNT-ID</span><code class="dancecard-uid"></code></div>' +
-          '<div class="dancecard-detail-field full"><span>ALLE TAGS</span><div class="dancecard-tag-list detail-tags" id="dancecardTagDetails"></div></div>' +
-        '</div>' +
-      '</details>' +
-    '</div>' +
-    '<div class="modal-actions"><button class="ui-button primary" id="manageAccount">Account verwalten</button>' +
-      (accountApi.isAdmin(accountProfile) ? '<button class="ui-button secondary" id="adminAccount">Admin Center</button>' : '') +
-      '<button class="ui-button ghost" id="logoutAccount">Abmelden</button></div>',
-    () => {
-      $(".ui-modal").classList.add("dancecard-modal");
-      $(".dancecard-name").textContent = display;
-      $(".dancecard-email-preview").textContent = email;
-      $(".dancecard-email").textContent = email;
-      $(".dancecard-uid").textContent = accountUser.uid;
-      $(".dancecard-player-code").textContent = accountUser.uid.slice(-8).toUpperCase();
-      $(".dancecard-gold-coins").textContent = goldCoins.toLocaleString("de-DE");
-      $(".dancecard-avatar").textContent = initialsFor(display);
-
-      const renderTags = selector => {
-        const root = $(selector);
-        root.replaceChildren();
-        if (!tags.length) {
-          const empty = document.createElement("span");
-          empty.className = "dancecard-tag muted-tag";
-          empty.textContent = "Keine Tags";
-          root.appendChild(empty);
-          return;
-        }
-        tags.forEach(tag => {
-          const pill = document.createElement("span");
-          pill.className = "dancecard-tag";
-          pill.textContent = tag;
-          root.appendChild(pill);
-        });
-      };
-      renderTags("#dancecardTagPreview");
-      renderTags("#dancecardTagDetails");
-       renderMaintenanceBypassControls();
-       $("#toggleMaintenanceBypass")?.addEventListener("click", async event => {
-         await setCurrentMaintenanceBypass(accountProfile?.maintenanceBypass !== true, event.currentTarget);
-       });
-
-      $("#manageAccount").addEventListener("click", () => {
-        const url = accountApi.CONFIG?.accountUrl || FALLBACK_ACCOUNT_URL;
-        window.location.href = url;
-      });
-      $("#adminAccount")?.addEventListener("click", () => {
-        window.location.href = "https://hannonuppi.github.io/Tobiservices-Account/admin.html";
-      });
-      $("#logoutAccount").addEventListener("click", async () => {
-        const button = $("#logoutAccount");
-        button.disabled = true;
-        try {
-          await accountApi.signOut();
-          closeModal();
-          showToast("Du wurdest von TobiServices abgemeldet.");
-        } catch (error) {
-          console.error(error);
-          showToast("Abmelden hat nicht geklappt. Bitte erneut versuchen.");
-          button.disabled = false;
-        }
-      });
-    });
+  openScreen("dancecard");
 }
+
 function initialsFor(value) {
   return String(value || "TS").trim().split(/\s+/).slice(0, 2).map(part => part[0] || "").join("").toUpperCase().slice(0, 2) || "TS";
 }
 
 function openLoginModal() {
-  if (!accountApi) {
-    openModal("TobiServices Login",
-      '<p class="modal-copy">Das gemeinsame Account-Modul ist gerade nicht erreichbar. Öffne den zentralen Login und kehre danach zur Beta zurück.</p>' +
-      '<div class="modal-actions"><a class="ui-button primary link-button" href="' + FALLBACK_LOGIN_URL + '?return=' + encodeURIComponent(window.location.href) + '">Zum TobiServices Login ↗</a></div>');
-    return;
-  }
-  openModal("Mit TobiServices anmelden",
-    '<p class="modal-copy">Melde dich mit einem bestehenden Firebase-Authentication-Konto und deiner E-Mail-Adresse an.</p>' +
-    '<form id="loginForm" class="account-form">' +
-      '<label for="accountUsername">E-Mail-Adresse</label><input id="accountUsername" name="email" type="email" autocomplete="email" maxlength="254" required placeholder="name@beispiel.de">' +
-      '<label for="accountPassword">Passwort</label><input id="accountPassword" name="password" type="password" autocomplete="current-password" maxlength="128" required placeholder="Dein Passwort">' +
-      '<p class="form-message" id="loginMessage" aria-live="polite"></p>' +
-      '<button class="ui-button primary" id="loginSubmit" type="submit">Anmelden</button>' +
-    '</form><p class="modal-footnote">Neue Konten legst du in Firebase Authentication an. Berechtigungen kommen aus dem geschützten Tag-System.</p>',
-    () => {
-      $("#loginForm").addEventListener("submit", async event => {
-        event.preventDefault();
-        const submit = $("#loginSubmit");
-        const message = $("#loginMessage");
-        submit.disabled = true;
-        message.textContent = "Anmeldung wird geprüft …";
-        message.className = "form-message";
-        try {
-          await accountApi.login($("#accountUsername").value.trim(), $("#accountPassword").value);
-          $("#accountPassword").value = "";
-          closeModal();
-          showToast("TobiServices-Anmeldung erfolgreich.");
-        } catch (error) {
-          console.error("TobiServices Login fehlgeschlagen:", error);
-          const code = String(error?.code || "");
-          message.className = "form-message error";
-          if (code.includes("auth/invalid-credential") || code.includes("auth/invalid-login-credentials") || code.includes("unauthenticated")) message.textContent = "E-Mail-Adresse oder Passwort ist falsch.";
-          else if (code.includes("invalid-argument")) message.textContent = error?.message || "Bitte prüfe E-Mail-Adresse und Passwort.";
-          else if (code.includes("unavailable") || code.includes("failed-precondition")) message.textContent = "Der Accountdienst ist derzeit nicht bereit oder erreichbar.";
-          else message.textContent = "Anmeldung fehlgeschlagen. Prüfe deine Verbindung und versuche es erneut.";
-          submit.disabled = false;
-        }
-      });
-    });
+  openScreen("login", { return: window.location.href });
 }
 
 const SONG_CATALOG = [
@@ -495,311 +366,62 @@ function saveCatalogFavorites() {
 }
 
 function openSearchModal(mode = "all") {
-  openModal(mode === "songs" ? "Songs durchsuchen" : "Song-Katalog",
-    '<p class="modal-copy">Durchsuche Songs aus Just Dance 2024 und 2025. Cover sind eigenständige Platzhalter; Schwierigkeitsgrade und Genres sind Demo-Metadaten, keine offiziellen In-Game-Werte.</p>' +
-    '<div class="catalog-controls">' +
-      '<label class="catalog-search-field"><span>SUCHEN</span><input class="search-input" id="catalogSearch" type="search" placeholder="Song, Artist oder Genre …" autocomplete="off" aria-label="Songs suchen"></label>' +
-      '<label class="catalog-filter"><span>EDITION</span><select id="catalogEdition"><option value="all">Alle Editionen</option><option value="2025">Just Dance 2025</option><option value="2024">Just Dance 2024</option></select></label>' +
-      '<label class="catalog-filter"><span>GENRE</span><select id="catalogGenre"><option value="all">Alle Genres</option></select></label>' +
-      '<label class="catalog-filter"><span>SCHWIERIGKEIT</span><select id="catalogDifficulty"><option value="all">Alle</option><option>Easy</option><option>Medium</option><option>Hard</option></select></label>' +
-      '<label class="catalog-filter catalog-sort"><span>SORTIEREN</span><select id="catalogSort"><option value="edition">Neueste Edition</option><option value="title">Titel A–Z</option><option value="artist">Artist A–Z</option><option value="difficulty">Schwierigkeit</option></select></label>' +
-    '</div>' +
-    '<div class="catalog-toolbar"><span class="search-count" id="searchCount" aria-live="polite"></span><button type="button" class="catalog-favorites-toggle" id="favoritesToggle" aria-pressed="false">☆ Favoriten</button><button type="button" class="catalog-layout-toggle" id="catalogLayoutToggle" aria-pressed="false">☷ Listenansicht</button></div>' +
-    '<div class="catalog-grid" id="songCatalogGrid" aria-label="Songs"></div>',
-    () => {
-      $(".ui-modal").classList.add("catalog-modal");
-      const searchInput = $("#catalogSearch");
-      const editionSelect = $("#catalogEdition");
-      const genreSelect = $("#catalogGenre");
-      const difficultySelect = $("#catalogDifficulty");
-      const sortSelect = $("#catalogSort");
-      const grid = $("#songCatalogGrid");
-      const favoriteToggle = $("#favoritesToggle");
-      const layoutToggle = $("#catalogLayoutToggle");
-      const genres = [...new Set(SONG_CATALOG.map(song => song.genre))].sort((a,b)=>a.localeCompare(b));
-      genres.forEach(genre => {
-        const option = document.createElement("option");
-        option.value = genre;
-        option.textContent = genre;
-        genreSelect.appendChild(option);
-      });
-      let favoritesOnly = false;
-      let listLayout = false;
-
-      function makeSongCard(song) {
-        const article = document.createElement("article");
-        article.className = "catalog-card";
-        article.style.setProperty("--cover-a", song.accent);
-        article.style.setProperty("--cover-b", song.accent2);
-
-        const main = document.createElement("button");
-        main.type = "button";
-        main.className = "catalog-card-main";
-        main.setAttribute("aria-label", song.title + " von " + song.artist + " öffnen");
-
-        const cover = document.createElement("span");
-        cover.className = "catalog-cover";
-        const coverTop = document.createElement("span");
-        coverTop.className = "catalog-cover-top";
-        const edition = document.createElement("span");
-        edition.textContent = "JUST DANCE " + song.edition;
-        const miniLogo = document.createElement("span");
-        miniLogo.className = "catalog-mini-logo";
-        miniLogo.textContent = "JD";
-        coverTop.append(edition, miniLogo);
-        const coverTitle = document.createElement("span");
-        coverTitle.className = "catalog-cover-title";
-        coverTitle.textContent = song.title;
-        const coverArtist = document.createElement("span");
-        coverArtist.className = "catalog-cover-artist";
-        coverArtist.textContent = song.artist;
-        const coverBottom = document.createElement("span");
-        coverBottom.className = "catalog-cover-bottom";
-        const genre = document.createElement("span");
-        genre.textContent = song.genre.toUpperCase();
-        const dots = document.createElement("span");
-        dots.className = "catalog-difficulty-dots difficulty-" + song.difficulty.toLowerCase();
-        for (let i=0;i<3;i++) {
-          const dot = document.createElement("i");
-          dots.appendChild(dot);
-        }
-        coverBottom.append(genre, dots);
-        cover.append(coverTop, coverTitle, coverArtist, coverBottom);
-
-        const info = document.createElement("span");
-        info.className = "catalog-card-info";
-        const title = document.createElement("strong");
-        title.className = "catalog-card-title";
-        title.textContent = song.title;
-        const artist = document.createElement("small");
-        artist.className = "catalog-card-artist";
-        artist.textContent = song.artist;
-        const meta = document.createElement("span");
-        meta.className = "catalog-card-meta";
-        const editionBadge = document.createElement("span");
-        editionBadge.textContent = "JD " + song.edition;
-        const difficultyBadge = document.createElement("span");
-        difficultyBadge.textContent = song.difficulty.toUpperCase();
-        meta.append(editionBadge, difficultyBadge);
-        info.append(title, artist, meta);
-        main.append(cover, info);
-        main.addEventListener("click", () => openCatalogSong(song));
-
-        const favorite = document.createElement("button");
-        favorite.type = "button";
-        favorite.className = "catalog-card-favorite";
-        favorite.textContent = catalogFavorites.has(song.id) ? "★" : "☆";
-        favorite.setAttribute("aria-label", catalogFavorites.has(song.id) ? "Favorit entfernen" : "Als Favorit markieren");
-        favorite.setAttribute("aria-pressed", String(catalogFavorites.has(song.id)));
-        favorite.addEventListener("click", event => {
-          event.stopPropagation();
-          if (catalogFavorites.has(song.id)) catalogFavorites.delete(song.id);
-          else catalogFavorites.add(song.id);
-          saveCatalogFavorites();
-          refresh();
-        });
-        article.append(main, favorite);
-        return article;
-      }
-
-      function refresh() {
-        const query = searchInput.value.trim().toLocaleLowerCase("de");
-        let songs = SONG_CATALOG.filter(song => {
-          const searchable = [song.title, song.artist, song.genre, String(song.edition), "just dance " + song.edition].join(" ").toLocaleLowerCase("de");
-          return searchable.includes(query) &&
-            (editionSelect.value === "all" || String(song.edition) === editionSelect.value) &&
-            (genreSelect.value === "all" || song.genre === genreSelect.value) &&
-            (difficultySelect.value === "all" || song.difficulty === difficultySelect.value) &&
-            (!favoritesOnly || catalogFavorites.has(song.id));
-        });
-
-        if (sortSelect.value === "title") songs.sort((a,b)=>a.title.localeCompare(b.title));
-        else if (sortSelect.value === "artist") songs.sort((a,b)=>a.artist.localeCompare(b.artist));
-        else if (sortSelect.value === "difficulty") {
-          const rank = {Easy:1,Medium:2,Hard:3};
-          songs.sort((a,b)=>rank[a.difficulty]-rank[b.difficulty] || a.title.localeCompare(b.title));
-        } else songs.sort((a,b)=>b.edition-a.edition || a.title.localeCompare(b.title));
-
-        grid.replaceChildren();
-        grid.classList.toggle("list-layout", listLayout);
-        if (!songs.length) {
-          const empty = document.createElement("div");
-          empty.className = "catalog-empty";
-          empty.textContent = favoritesOnly && !catalogFavorites.size
-            ? "Noch keine Favoriten. Markiere Songs mit ☆, um sie hier zu sammeln."
-            : "Keine passenden Songs gefunden. Passe Suche oder Filter an.";
-          grid.appendChild(empty);
-        } else {
-          songs.forEach(song => grid.appendChild(makeSongCard(song)));
-        }
-        $("#searchCount").textContent = songs.length + (songs.length === 1 ? " SONG" : " SONGS") + " · " + catalogFavorites.size + " FAVORITEN";
-        favoriteToggle.setAttribute("aria-pressed", String(favoritesOnly));
-        favoriteToggle.textContent = favoritesOnly ? "★ Favoriten anzeigen" : "☆ Nur Favoriten";
-        layoutToggle.setAttribute("aria-pressed", String(listLayout));
-        layoutToggle.textContent = listLayout ? "▦ Rasteransicht" : "☷ Listenansicht";
-      }
-
-      [searchInput, editionSelect, genreSelect, difficultySelect, sortSelect].forEach(element => {
-        element.addEventListener(element === searchInput ? "input" : "change", refresh);
-      });
-      favoriteToggle.addEventListener("click", () => { favoritesOnly = !favoritesOnly; refresh(); });
-      layoutToggle.addEventListener("click", () => { listLayout = !listLayout; refresh(); });
-      refresh();
-      searchInput.focus();
-    });
+  openScreen("catalog", { mode });
 }
 
 function openCatalogSong(song) {
-  openModal(song.title,
-    '<div class="catalog-detail-cover" id="catalogDetailCover"><div class="catalog-detail-brand">JUST DANCE ' + song.edition + '</div><div class="catalog-detail-title" id="catalogDetailTitle"></div><div class="catalog-detail-artist" id="catalogDetailArtist"></div></div>' +
-    '<div class="catalog-detail-metadata"><span id="catalogDetailEdition"></span><span id="catalogDetailGenre"></span><span id="catalogDetailDifficulty"></span><span id="catalogDetailDuration"></span></div>' +
-    '<p class="modal-copy">Song- und Artistdaten stammen aus den Edition-Tracklists. Cover und Schwierigkeitsanzeige sind Platzhalter; dieser Prototyp enthält keine Audiodatei und startet kein echtes Gameplay.</p>' +
-    '<div class="modal-actions"><button class="ui-button primary" id="catalogDemoStart">▶ Demo-Player</button><button class="ui-button secondary" id="catalogFavoriteToggle"></button><button class="ui-button ghost" id="catalogBackToSearch">Zur Suche</button></div>',
-    () => {
-      const cover = $("#catalogDetailCover");
-      cover.style.setProperty("--cover-a", song.accent);
-      cover.style.setProperty("--cover-b", song.accent2);
-      $("#catalogDetailTitle").textContent = song.title;
-      $("#catalogDetailArtist").textContent = song.artist;
-      $("#catalogDetailEdition").textContent = "JUST DANCE " + song.edition;
-      $("#catalogDetailGenre").textContent = song.genre;
-      $("#catalogDetailDifficulty").textContent = "Demo: " + song.difficulty;
-      $("#catalogDetailDuration").textContent = song.duration;
-      const favoriteButton = $("#catalogFavoriteToggle");
-      const updateFavoriteLabel = () => {
-        favoriteButton.textContent = catalogFavorites.has(song.id) ? "★ Favorit gespeichert" : "☆ Als Favorit speichern";
-        favoriteButton.setAttribute("aria-pressed", String(catalogFavorites.has(song.id)));
-      };
-      updateFavoriteLabel();
-      favoriteButton.addEventListener("click", () => {
-        if (catalogFavorites.has(song.id)) catalogFavorites.delete(song.id);
-        else catalogFavorites.add(song.id);
-        saveCatalogFavorites();
-        updateFavoriteLabel();
-      });
-      $("#catalogDemoStart").addEventListener("click", () => startDemo(song.title, song.artist + " · JD " + song.edition));
-      $("#catalogBackToSearch").addEventListener("click", () => openSearchModal("songs"));
-    });
+  openScreen("song", { id: song.id });
 }
+
 function openCardDetail(card) {
   selectedCard = card;
   $$(".selected-tile").forEach(el => el.classList.remove("selected-tile"));
   card.classList.add("selected-tile");
-  $(".song-tile, .track-tile").forEach(el => el.setAttribute("aria-pressed", String(el === card)));
+  $$(".song-tile, .track-tile").forEach(el => el.setAttribute("aria-pressed", String(el === card)));
+
   const title = card.querySelector("h3")?.textContent?.trim() || "Unbenannter Eintrag";
   const isPlaylist = card.classList.contains("mood-tile");
   const subtitle = card.querySelector(".tile-sub, .track-info p")?.textContent?.trim() || (isPlaylist ? "PLAYLIST" : "SONG");
-  const rating = card.querySelector(".rating-stars, .track-rating")?.textContent?.trim() || "";
-  const duration = card.querySelector(".tile-duration")?.textContent?.trim() || "";
+  const duration = card.querySelector(".tile-duration")?.textContent?.replace(/^◷\s*/, "").trim() || "";
   const difficulty = card.querySelector(".track-stats span:nth-child(2)")?.textContent?.trim() || "—";
-  openModal(title,
-    '<div class="detail-art ' + (isPlaylist ? "detail-playlist" : "detail-song") + '"></div>' +
-    '<p class="detail-subtitle"></p><div class="detail-facts"><span class="detail-type"></span><span class="detail-duration"></span><span class="detail-difficulty"></span><span class="detail-rating"></span></div>' +
-    '<p class="modal-copy">Dies ist eine interaktive UI-Demo. Es werden keine Original-Audiodateien abgespielt und es gibt noch kein Tanz-Gameplay oder Scoring.</p>' +
-    '<div class="modal-actions"><button class="ui-button primary" id="startDemo">▶ Demo starten</button><button class="ui-button secondary" id="chooseCard">Auswählen</button></div>',
-    () => {
-      $(".detail-subtitle").textContent = subtitle;
-      $(".detail-type").textContent = isPlaylist ? "PLAYLIST" : "SONG";
-      $(".detail-duration").textContent = duration;
-      $(".detail-difficulty").textContent = isPlaylist ? "" : difficulty;
-      $(".detail-rating").textContent = rating;
-      const art = card.querySelector(".tile-art, .track-cover");
-      if (art) {
-        const background = getComputedStyle(art).backgroundImage;
-        if (background && background !== "none") $(".detail-art").style.backgroundImage = background;
-        else $(".detail-art").classList.add(card.classList.contains("tile-neon") ? "tile-neon" : "");
-      }
-      $("#startDemo").addEventListener("click", () => startDemo(title, subtitle));
-      $("#chooseCard").addEventListener("click", () => {
-        closeModal();
-        showToast("„" + title + "“ ausgewählt.");
-      });
-    });
+  const palette = card.classList.contains("tile-neon") ? ["#182e92","#e83d9c"]
+    : card.classList.contains("tile-coral") ? ["#fb7950","#b92d58"]
+    : card.classList.contains("tile-aqua") ? ["#1679ae","#5735c6"]
+    : card.classList.contains("tile-lime") ? ["#80ad34","#e54396"]
+    : card.classList.contains("cover-prism") ? ["#253fb2","#ec4596"]
+    : card.classList.contains("cover-pulse") ? ["#343084","#df459f"]
+    : card.classList.contains("cover-stardust") ? ["#133d7a","#6f42c2"]
+    : ["#5331a5","#d63293"];
+  openScreen("song", {
+    title,
+    artist: isPlaylist ? "JDNEXT CURATED" : subtitle,
+    subtitle,
+    kind: isPlaylist ? "playlist" : "song",
+    difficulty: isPlaylist ? "" : difficulty,
+    duration,
+    accent: palette[0],
+    accent2: palette[1],
+    genre: isPlaylist ? "FEATURED PLAYLIST" : "FEATURED TRACK"
+  });
 }
 
 function startDemo(title, subtitle) {
-  demoSeconds = 0;
-  demoPlaying = false;
-  openModal("Demo-Player",
-    '<div class="demo-visual"><span class="demo-beat beat-one"></span><span class="demo-beat beat-two"></span><span class="demo-beat beat-three"></span><strong class="demo-play-mark">JD</strong></div>' +
-    '<p class="detail-subtitle demo-track-title"></p><p class="modal-copy">Simulierter Ablauf ohne Musikdatei. Der 30-Sekunden-Timer demonstriert nur die Oberfläche.</p>' +
-    '<div class="demo-timer-row"><span id="demoElapsed">0:00</span><span>0:30</span></div><progress id="demoProgress" max="30" value="0"></progress>' +
-    '<div class="modal-actions"><button class="ui-button primary" id="toggleDemo">▶ Starten</button><button class="ui-button secondary" id="resetDemo">↺ Neu starten</button></div>',
-    () => {
-      $(".demo-track-title").textContent = title + " — " + subtitle;
-      const update = () => {
-        $("#demoProgress").value = demoSeconds;
-        $("#demoElapsed").textContent = "0:" + String(demoSeconds).padStart(2, "0");
-        $("#toggleDemo").textContent = demoPlaying ? "Ⅱ Pause" : demoSeconds >= 30 ? "↺ Erneut starten" : "▶ Starten";
-      };
-      $("#toggleDemo").addEventListener("click", () => {
-        if (demoSeconds >= 30) demoSeconds = 0;
-        demoPlaying = !demoPlaying;
-        update();
-      });
-      $("#resetDemo").addEventListener("click", () => {
-        demoSeconds = 0;
-        demoPlaying = false;
-        update();
-      });
-      demoTimer = setInterval(() => {
-        if (!demoPlaying || overlay.hidden) return;
-        demoSeconds++;
-        if (demoSeconds >= 30) {
-          demoSeconds = 30;
-          demoPlaying = false;
-          showToast("Demo beendet – kein echtes Gameplay ausgeführt.");
-        }
-        update();
-      }, 1000);
-      update();
-    });
+  openScreen("player", { title, subtitle, artist: subtitle });
 }
 
 function openSettings() {
-  let reduceMotion = prefersReducedMotion();
-  let highContrast = false;
-  try { highContrast = localStorage.getItem("jdnext-high-contrast") === "true"; } catch {}
-  openModal("Einstellungen",
-    '<p class="modal-copy">Diese Einstellungen werden nur in diesem Browser gespeichert.</p>' +
-    '<label class="setting-row"><span><strong>Bewegung reduzieren</strong><small>Schaltet Scroll- und UI-Übergänge ab.</small></span><input type="checkbox" id="reduceMotionToggle"></label>' +
-    '<label class="setting-row"><span><strong>Hoher Kontrast</strong><small>Verstärkt den Kontrast von Flächen und Rahmen.</small></span><input type="checkbox" id="highContrastToggle"></label>' +
-    '<div class="modal-actions"><button class="ui-button primary" id="saveSettings">Einstellungen speichern</button></div>',
-    () => {
-      $("#reduceMotionToggle").checked = reduceMotion;
-      $("#highContrastToggle").checked = highContrast;
-      $("#saveSettings").addEventListener("click", () => {
-        reduceMotion = $("#reduceMotionToggle").checked;
-        highContrast = $("#highContrastToggle").checked;
-        try {
-          localStorage.setItem("jdnext-reduce-motion", String(reduceMotion));
-          localStorage.setItem("jdnext-high-contrast", String(highContrast));
-        } catch {
-          showToast("Browser-Speicher nicht verfügbar; Einstellung gilt nur bis zum Neuladen.");
-        }
-        applyPreferences();
-        closeModal();
-        showToast("Einstellungen gespeichert.");
-      });
-    });
+  openScreen("settings");
 }
 
 function showNotifications() {
-  openModal("Benachrichtigungen",
-    '<div class="notice-item"><span class="notice-dot"></span><div><strong>UI-Prototyp bereit</strong><p>Die Menüelemente können nun ausprobiert werden.</p></div></div>' +
-    '<div class="notice-item"><span class="notice-dot muted"></span><div><strong>Account-Verbindung</strong><p>Der Profilknopf verwendet dein bestehendes TobiServices-Konto.</p></div></div>' +
-    '<p class="modal-footnote">Dies sind lokale Demo-Mitteilungen, keine Serverbenachrichtigungen.</p>');
+  openScreen("notifications");
 }
 
 function showMoreContent() {
-  openModal("Mehr Inhalte",
-    '<p class="modal-copy">Der Katalog ist noch ein lokaler Prototyp. Hier könnten später Seasons, benutzerdefinierte Maps und Playlists erscheinen.</p>' +
-    '<div class="coming-soon"><span>✦</span><strong>MORE CONTENT</strong><small>IN EINEM SPÄTEREN MILESTONE</small></div>' +
-    '<div class="modal-actions"><button class="ui-button primary" id="browseContent">Katalog durchsuchen</button></div>',
-    () => $("#browseContent").addEventListener("click", () => openSearchModal("all")));
+  openScreen("content");
 }
 
-$$(".nav-icon").forEach(icon => {
+$(".nav-icon").forEach(icon => {
   icon.setAttribute("role", "button");
   icon.tabIndex = 0;
   icon.addEventListener("keydown", event => {
@@ -812,8 +434,8 @@ $$(".nav-icon").forEach(icon => {
     else if (label === "Home") {
       window.scrollTo({ top: 0, behavior: prefersReducedMotion() ? "auto" : "smooth" });
       setActiveNav("Home");
-    } else if (label === "Songs") scrollToSection(".tracks-section", "Songs");
-    else if (label === "Playlists") scrollToSection(".feature-section", "Playlists");
+    } else if (label === "Songs") openSearchModal("songs");
+    else if (label === "Playlists") openScreen("playlists");
     else if (label === "Profil" || label === "Dancecard") showProfile();
     else if (label === "Mehr Inhalte") showMoreContent();
     else if (label === "Einstellungen") openSettings();
@@ -826,8 +448,7 @@ $(".player-pill")?.setAttribute("tabindex", "0");
 $(".player-pill")?.addEventListener("keydown", event => {
   if (event.key === "Enter" || event.key === " ") { event.preventDefault(); showProfile(); }
 });
-$(".season-pill")?.addEventListener("click", () => openModal("Season 01",
-  '<p class="modal-copy">Das Saison-Badge ist vorerst ein UI-Element. Saisoninhalte und Fortschritt sind noch nicht mit einem Backend verbunden.</p>'));
+$(".season-pill")?.addEventListener("click", () => openScreen("content"));
 $(".season-pill")?.setAttribute("role", "button");
 $(".season-pill")?.setAttribute("tabindex", "0");
 $(".season-pill")?.addEventListener("keydown", event => {
