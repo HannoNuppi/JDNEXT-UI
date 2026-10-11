@@ -228,7 +228,7 @@ function updateBetaGate() {
       : "JDNEXT prüft gerade, ob Wartungsarbeiten aktiv sind.";
     if (status) status.textContent = "Der Zugang bleibt gesperrt, bis der Wartungsstatus bestätigt ist.";
     if (button) button.textContent = "Konto wechseln ↗";
-  } else if ((isAdmin || hasBetaTag) && maintenanceState.enabled && !bypassActive) {
+  } else if (hasBetaAccess && maintenanceState.enabled && !bypassActive) {
     if (title) title.textContent = "Wir machen kurz Wartung.";
     if (message) message.textContent = maintenanceState.message || "JDNEXT wird gerade gewartet. Bitte versuche es später erneut.";
     if (status) status.textContent = isAdmin
