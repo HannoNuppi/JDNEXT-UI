@@ -11,6 +11,23 @@ import {
 } from "https://hannonuppi.github.io/Tobiservices-Account/auth-core.js";
 
 const $ = selector => document.querySelector(selector);
+
+const AVATAR_STORAGE_PREFIX = "jdnext-avatar-v1:";
+const AVATARS = [
+  {id:"neon",name:"Neon Dancer",symbol:"🕺",a:"#b34aff",b:"#32dff9",style:"NEON ICON"},
+  {id:"starlight",name:"Starlight",symbol:"💃",a:"#ff43bb",b:"#ffb34b",style:"STAR POP"},
+  {id:"cosmic",name:"Cosmic DJ",symbol:"🧑‍🎤",a:"#5368ff",b:"#bc4bff",style:"COSMIC"},
+  {id:"disco",name:"Disco Orb",symbol:"🪩",a:"#ffe46e",b:"#ff43bb",style:"DISCO"},
+  {id:"robo",name:"Robo Beat",symbol:"🤖",a:"#54f3fb",b:"#3e4cbb",style:"SYNTH"},
+  {id:"alien",name:"Alien Groove",symbol:"👽",a:"#a4ed53",b:"#642be8",style:"EXTRA"},
+  {id:"catwalk",name:"Catwalk",symbol:"🐱",a:"#a17bff",b:"#ff61b5",style:"PLAYFUL"},
+  {id:"foxfire",name:"Foxfire",symbol:"🦊",a:"#ff9a45",b:"#df3c83",style:"FIRE"}
+];
+function getSelectedAvatar(uid) {
+  let id = "neon";
+  try { id = localStorage.getItem(AVATAR_STORAGE_PREFIX + (uid || "guest")) || "neon"; } catch {}
+  return AVATARS.find(avatar => avatar.id === id) || AVATARS[0];
+}
 const screenName = document.body.dataset.screen || "content";
 const HOME_URL = "../index.html";
 const SONGS = [
@@ -231,15 +248,17 @@ function renderDancecard() {
   const coins=Number.isSafeInteger(currentProfile.goldCoins)&&currentProfile.goldCoins>=0?currentProfile.goldCoins:0;
   const code=currentUser.uid.slice(-8).toUpperCase();
   const access=isAdmin(currentProfile)?"ADMIN":hasTag(currentProfile,"dance-beta")?"CLOSED BETA":"PLAYER";
+  const selectedAvatar=getSelectedAvatar(currentUser.uid);
   $("#screenContent").innerHTML =
     '<div class="screen-title-row"><div><p class="screen-overline">YOUR PROFILE · PLAYER ID</p><h2 class="screen-title">DEIN DANCEFLOOR. DEIN PROFIL.</h2><p class="screen-lede">Deine TobiServices-Dancecard mit echtem Kontostand, Zugangsstatus und deinen aktuellen Tags.</p></div><span class="screen-chip">ACCOUNT CONNECTED</span></div>' +
     '<div class="dancecard-grid"><article class="player-id-card">' +
-      '<header class="player-id-top"><div class="player-id-brand">JUST DANCE <span>NEXT PLAYER CARD</span></div><div class="player-id-season">SEASON <b>01</b></div></header>' +
-      '<div class="player-id-main"><div class="player-avatar-stage"><div class="player-avatar-initial">'+escapeHtml(initials(display))+'</div><span class="player-avatar-caption">PLAYER EMBLEM</span></div>' +
+      '<header class="player-id-top"><div class="player-id-brand">JUST DANCE <span>NEXT PLAYER CARD</span></div><div class="player-id-season">SEASON <b>0</b><small>EARLY ACCESS</small></div></header>' +
+      '<div class="player-id-main"><div class="player-avatar-stage" style="--avatar-a:'+selectedAvatar.a+';--avatar-b:'+selectedAvatar.b+'"><div class="player-avatar-initial avatar-character" data-avatar-id="'+selectedAvatar.id+'">'+escapeHtml(selectedAvatar.symbol)+'</div><span class="player-avatar-caption">'+escapeHtml(selectedAvatar.name.toUpperCase())+'</span></div>' +
       '<div class="player-id-copy"><span class="player-id-label">YOUR DANCE ID</span><h2 class="player-id-name">'+escapeHtml(display)+'</h2><div class="player-id-email">'+escapeHtml(email)+'</div><span class="player-access-stamp"><i></i> '+escapeHtml(access)+' · VERIFIED</span></div></div>' +
       '<footer class="player-id-bottom"><div class="player-id-code"><small>PLAYER CODE</small><strong>'+escapeHtml(code)+'</strong></div><span class="player-code-bars" aria-hidden="true"></span><span class="player-id-star" aria-hidden="true">✦</span></footer>' +
     '</article><div class="dancecard-side">' +
       '<section class="wallet-panel"><div class="wallet-coin" aria-hidden="true">✦</div><div class="wallet-detail"><span>GOLDMÜNZEN</span><strong>'+coins.toLocaleString("de-DE")+'</strong><small>Gemeinsames Guthaben bei TobiServices · read-only in der Dancecard</small></div></section>' +
+      '<section class="screen-panel avatar-picker-panel"><h3 class="screen-panel-title">DEIN AVATAR <small>8 LOOKS</small></h3><p class="avatar-picker-copy">Wähle deinen Look für JDNEXT. Die Auswahl wird auf diesem Browser pro Konto gespeichert.</p><div class="avatar-preset-grid" id="avatarPresetGrid">'+AVATARS.map(avatar=>'<button class="avatar-preset" type="button" data-avatar-id="'+avatar.id+'" aria-pressed="'+String(avatar.id===selectedAvatar.id)+'" style="--avatar-a:'+avatar.a+';--avatar-b:'+avatar.b+'" aria-label="Avatar '+escapeHtml(avatar.name)+' auswählen"><span class="avatar-preset-art">'+escapeHtml(avatar.symbol)+'</span><strong>'+escapeHtml(avatar.name)+'</strong><small>'+escapeHtml(avatar.style)+'</small></button>').join("")+'</div><p class="avatar-picker-note">Die Auswahl ist kosmetisch und verändert keine Account-Berechtigungen oder Münzen.</p></section>' +
       '<section class="screen-panel"><h3 class="screen-panel-title">PLAYER DETAILS <small>ACCOUNT DATA</small></h3><div class="dancecard-facts">' +
         '<div class="dancecard-fact"><span>ACCESS LEVEL</span><strong>'+escapeHtml(access)+'</strong></div>' +
         '<div class="dancecard-fact"><span>ACCOUNT STATUS</span><strong>CONNECTED</strong></div>' +
@@ -253,6 +272,23 @@ function renderDancecard() {
   if(!tags.length)tagRoot.innerHTML='<span class="screen-muted" style="font-size:10px">Keine Tags zugewiesen</span>';
   else tagRoot.innerHTML=tags.map(tag=>'<span class="dancecard-tag '+(tag==="admin"?"admin":tag==="dance-beta"?"beta":"")+'">'+escapeHtml(tag)+'</span>').join("");
   refreshDancecardStatus();
+  const avatarGrid=$("#avatarPresetGrid");
+  avatarGrid?.addEventListener("click",event=>{
+    const button=event.target.closest("[data-avatar-id]");
+    if(!button)return;
+    const avatar=AVATARS.find(item=>item.id===button.dataset.avatarId);
+    if(!avatar)return;
+    try { localStorage.setItem(AVATAR_STORAGE_PREFIX+currentUser.uid,avatar.id); }
+    catch { screenToast("Avatar konnte im Browser nicht gespeichert werden.");return; }
+    avatarGrid.querySelectorAll(".avatar-preset").forEach(item=>item.setAttribute("aria-pressed",String(item===button)));
+    const character=$(".player-avatar-initial");
+    const stage=$(".player-avatar-stage");
+    const caption=$(".player-avatar-caption");
+    if(character){character.textContent=avatar.symbol;character.dataset.avatarId=avatar.id;}
+    if(stage){stage.style.setProperty("--avatar-a",avatar.a);stage.style.setProperty("--avatar-b",avatar.b);}
+    if(caption)caption.textContent=avatar.name.toUpperCase();
+    screenToast(avatar.name+" ist jetzt dein Avatar.");
+  });
   $("#toggleBypass")?.addEventListener("click",async()=>{
     const button=$("#toggleBypass");
     button.disabled=true;
