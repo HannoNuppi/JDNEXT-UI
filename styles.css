@@ -485,3 +485,72 @@ body{margin:0;color:var(--white);font-family:Inter,Arial,sans-serif;background:r
 .dancecard-maintenance-panel{display:grid;gap:8px;margin-top:10px}
 .dancecard-maintenance-panel button{justify-self:start;margin-top:4px}
 @media(max-width:600px){.beta-gate-actions{display:grid}.beta-gate-actions .beta-gate-button{width:100%}.dancecard-maintenance-panel button{width:100%}}
+
+
+/* Season 0 Early Access menu + selectable player avatars */
+.season-access-label{padding-left:8px;border-left:1px solid #ffffff30;color:#5df6f4;font-size:7px;font-weight:900;letter-spacing:1px;white-space:nowrap}
+.player-avatar{font-size:14px;line-height:1;overflow:hidden;flex-shrink:0}
+.ui-modal.season-modal{width:min(100%,900px);padding:clamp(16px,2.8vw,28px)}
+.ui-modal.season-modal>.modal-content>h2{margin-bottom:13px}
+.season-menu-hero{position:relative;isolation:isolate;overflow:hidden;padding:clamp(20px,3vw,32px);border:1px solid #ffffff52;background:radial-gradient(circle at 83% 20%,#ff50bf82,transparent 28%),linear-gradient(115deg,#12377b 0%,#4520a0 42%,#a9278b 78%,#ee6b63 100%);box-shadow:0 12px 30px #05001938}
+.season-menu-hero:before{content:"";position:absolute;z-index:-1;width:300px;height:300px;right:-45px;top:-145px;border:1px solid #ffffffa3;border-radius:50%;box-shadow:0 0 0 16px #ffffff14,0 0 0 39px #ffffff0c,0 0 0 65px #ffffff08}
+.season-menu-topline,.season-menu-badges,.season-menu-panel-heading,.season-menu-panel-heading>div,.season-progress-line{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.season-menu-topline{font-size:8px;font-weight:900;letter-spacing:1.8px;color:#e4e9ff}
+.season-menu-live{display:inline-flex;align-items:center;gap:7px;padding:6px 8px;border:1px solid #b1ffdb8a;background:#8cffc51a;color:#cbffdf;font-size:7px}
+.season-menu-live i{width:6px;height:6px;border-radius:50%;background:#82ffc0;box-shadow:0 0 10px #82ffc0}
+.season-menu-identity{display:grid;grid-template-columns:clamp(70px,12vw,118px) minmax(0,1fr);align-items:center;gap:clamp(16px,3vw,30px);margin:20px 0 17px}
+.season-menu-zero{font:900 clamp(78px,13vw,132px)/.75 Impact,"Arial Narrow",sans-serif;letter-spacing:-5px;color:#fff18c;text-shadow:0 7px 22px #0800195c}
+.season-menu-kicker{margin:0 0 7px;color:#a2fbff;font-size:8px;font-weight:900;letter-spacing:2px}
+.season-menu-identity h3{margin:0 0 10px;font:900 clamp(29px,5vw,52px)/.85 Impact,"Arial Narrow",sans-serif;letter-spacing:-.6px}
+.season-menu-description{max-width:520px;margin:0;color:#f5eaff;font-size:11px;line-height:1.75}
+.season-menu-badges{justify-content:flex-start;flex-wrap:wrap}
+.season-menu-badges span{padding:7px 9px;border:1px solid #ffffff60;background:#160a3b38;color:#fff;font-size:7px;font-weight:900;letter-spacing:1.1px}
+.season-menu-tabs{display:flex;gap:7px;padding:13px 0 11px;overflow-x:auto}
+.season-tab{flex:1;min-height:39px;padding:8px 11px;border:1px solid #ffffff21;background:#ffffff06;color:#b5a6d0;font:800 9px Inter,Arial,sans-serif;letter-spacing:.7px;cursor:pointer;white-space:nowrap}
+.season-tab:hover{border-color:#ffffff55;color:#fff}
+.season-tab.active{border-color:#5df6f4a6;background:#5df6f414;color:#9bfffa;box-shadow:inset 0 -2px #5df6f4}
+.season-menu-panel[hidden]{display:none!important}
+.season-menu-panel{padding:clamp(14px,2.4vw,23px);border:1px solid #ffffff20;background:linear-gradient(130deg,#ffffff08,#ffffff02)}
+.season-menu-panel-heading{margin-bottom:13px}
+.season-menu-panel-heading>div>span{display:block;margin-bottom:5px;color:#9d8aba;font-size:7px;font-weight:900;letter-spacing:1.5px}
+.season-menu-panel-heading h4{margin:0;font:900 clamp(22px,3.2vw,32px)/.95 Impact,"Arial Narrow",sans-serif;letter-spacing:.2px}
+.season-status-pill{flex:0 0 auto;padding:7px 9px;border:1px solid #5df6f46b;color:#8efbf4;background:#5df6f410;font-size:7px;font-weight:900;letter-spacing:1px}
+.season-menu-copy{max-width:720px;margin:0 0 15px;color:#c2b5d9;font-size:10px;line-height:1.8}
+.season-progress-card{padding:13px;border:1px solid #ffffff17;background:#08051a50}
+.season-progress-line span{font-size:8px;font-weight:900;letter-spacing:1.1px;color:#b8a8d4}
+.season-progress-line strong{font-size:8px;letter-spacing:1px;color:#fff18c}
+.season-progress-track{height:7px;margin:11px 0 8px;background:#ffffff16;overflow:hidden}
+.season-progress-track i{display:block;width:12%;height:100%;background:linear-gradient(90deg,#ff43bb,#5df6f4);box-shadow:0 0 12px #5df6f477}
+.season-progress-card small{color:#82739f;font-size:8px;line-height:1.6}
+.season-menu-actions{display:flex;gap:9px;flex-wrap:wrap;margin-top:16px}
+.season-menu-footer{margin:13px 0 0;color:#76658f;font-size:7px;letter-spacing:1.1px;text-align:right}
+.season-reward-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.season-reward-card{min-width:0;padding:11px;border:1px solid #ffffff19;background:#ffffff05}
+.season-reward-art{display:grid;place-items:center;aspect-ratio:1.25/1;margin-bottom:11px;font-size:33px;font-weight:900;color:#fff;background:linear-gradient(135deg,#26145a,#11102d);border:1px solid #ffffff28;text-shadow:0 0 20px currentColor}
+.season-reward-art.reward-pink{color:#ff72d0;background:linear-gradient(135deg,#6f1e83,#28134c)}
+.season-reward-art.reward-cyan{color:#70faff;background:linear-gradient(135deg,#145c89,#222054)}
+.season-reward-art.reward-gold{color:#fff18c;background:linear-gradient(135deg,#8b4d18,#431955)}
+.season-reward-art.reward-purple{color:#d7a4ff;background:linear-gradient(135deg,#4b238d,#22124d)}
+.season-reward-card strong,.season-reward-card small,.season-reward-card>span{display:block;overflow-wrap:anywhere}
+.season-reward-card strong{font-size:9px;letter-spacing:.4px}
+.season-reward-card small{min-height:25px;margin-top:5px;color:#a594c2;font-size:8px;line-height:1.5}
+.season-reward-card>span{margin-top:8px;color:#ffe98f;font-size:7px;font-weight:900;letter-spacing:1px}
+.season-challenge-list{display:grid;gap:8px}
+.season-challenge{display:grid;grid-template-columns:38px minmax(0,1fr) auto;align-items:center;gap:11px;padding:11px;border:1px solid #ffffff18;background:#ffffff05}
+.season-challenge-icon{display:grid;place-items:center;width:38px;height:38px;background:#ff43bb15;border:1px solid #ff43bb44;color:#ff8ddc;font-size:17px}
+.season-challenge strong,.season-challenge small{display:block}
+.season-challenge strong{font-size:10px}
+.season-challenge small{margin-top:4px;color:#9786b2;font-size:8px;line-height:1.5}
+.season-challenge>span:last-child{color:#82faf4;font-size:7px;font-weight:900;letter-spacing:.8px}
+@media(max-width:650px){
+ .season-access-label{display:none}
+ .ui-modal.season-modal{padding:20px 13px}
+ .season-menu-topline{font-size:7px}
+ .season-menu-identity{grid-template-columns:58px minmax(0,1fr);gap:13px;margin:19px 0}
+ .season-menu-zero{font-size:75px}
+ .season-menu-description{font-size:10px}
+ .season-tab{font-size:8px;padding:8px 7px}
+ .season-reward-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .season-menu-actions{display:grid;grid-template-columns:1fr}
+ .season-menu-actions .ui-button{width:100%}
+}
